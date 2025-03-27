@@ -1,0 +1,86 @@
+body{
+    margin: 0px;
+    font-family: 'Tektur', sans-serif;
+    background-color: #555555;
+
+}
+
+.flotante{
+    width: 800px;
+    height: 900px;
+    background-color: #333;
+    border-radius: 20px;
+    margin: 20px auto;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra debajo */
+    outline: none; /* Elimina el contorno azul predeterminado */    
+
+}
+
+.logo{
+    width: 200px;
+    height: 200px;
+    margin: 20px auto;
+    padding-bottom: 0px;
+}
+div div img{
+    width: 200px;
+    height: 200px;
+}
+div div h1{
+    color: white;
+    text-align: center;
+    margin: 0 auto;
+}
+
+/*AQUI ESTA LA PARTE DEL FORMULARIO*/
+.formulario{
+    width: 500px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    margin-top: 50px;
+}
+div div form div label{
+    size: 30px;
+    color: white;   
+}
+div div form div input{
+    width: 100%;
+    height: 40px;
+    background-color: #5c5b5b;
+    border-radius: 4px;
+    border: 0px;
+    margin-top: 10px;
+    padding-left: 10px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra debajo */
+    outline: none; /* Elimina el contorno azul predeterminado */
+}
+.input{
+    margin: 30px 0px 0px 0px;
+}
+
+.botonC{
+    margin: 50px auto;
+    width: 150px;
+}
+
+.boton{
+    width: 150px;
+    height: 50px;
+    background-color: #727FFF;
+    border-radius: 20px;
+    margin: 0 auto;
+    font-size: 20px;
+    color: white;
+    font-family: 'Tektur', sans-serif;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra debajo */
+    outline: none; /* Elimina el contorno azul predeterminado */    
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Transición suave */
+
+}
+.boton:hover {
+    background-color: #5a5ed1; /* Un tono más oscuro del color original */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Transición suave */
+}
+

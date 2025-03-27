@@ -1,0 +1,90 @@
+body{
+    margin: 0px;
+    font-family: 'Tektur', sans-serif;
+    background-color: #555555;
+}
+.container{
+    width: 100%;
+    margin: 0 auto;
+
+}
+
+/*ESTA ES TODA LA PARTE DEL HEADER */
+.headerContainer{
+    width: 100%;
+    height: 80px;
+}
+header{
+    width: 100%;
+    height: 80px;
+    background-color: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+header div img{
+    width: 80px;
+    height: 80px;
+    margin: 10px 10px 10px 20px;
+}
+/*TITULO Y SUBTITULO */
+.titulo{
+    float: left;
+    width: 500px;
+    height: 50px;
+    margin: 10px 10px 40px 0px;
+
+}
+
+header div div h1{
+    size: 100px;
+}
+
+/*CUENTA*/
+
+.cuenta{
+    margin-top: 1px;
+    width: 50px;
+    height: 50px;
+    margin-left: 1150px;
+    display: flex;
+    justify-content: center; 
+    align-items: center;   
+
+
+}
+
+.cuenta img{
+    width: 50px;
+    height: 50px;
+}
+/* GRAFICO*/
+.grafico{
+    width: 1400px;
+    height: 600px;
+    background-color: #333;
+    border-radius: 20px;
+    margin: 20px 0px 0px 20px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra debajo */
+    outline: none; /* Elimina el contorno azul predeterminado */    
+    float: left;
+}
+/*ACTIVOS*/
+
+.activos{
+    width: 400px;
+    height: 800px;
+    background-color: #333;
+    border-radius: 20px;
+    margin: 20px 20px 0px 0px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra debajo */
+    outline: none; /* Elimina el contorno azul predeterminado */    
+    float: right;
+}
+
+.activos h1{
+    color: white;
+    text-align: center;
+    margin: 10px auto;
+}

@@ -1,10 +1,10 @@
 body{
-    margin: 0px;
+    margin: auto;
     font-family: 'Tektur', sans-serif;
     background-color: #555555;
 }
 .container{
-    width: 100%;
+    width: auto;
     margin: 0 auto;
 
 }
@@ -43,19 +43,18 @@ header div div h1{
 
 /*CUENTA*/
 
-.cuenta{
+.cuenta {
     margin-top: 1px;
-    width: 50px;
-    height: 50px;
-    margin-left: 1150px;
+    width: 40px;
+    height: 40px;
     display: flex;
-    justify-content: center; 
-    align-items: center;   
-
-
+    margin-left: auto;
+    float: right;
+    justify-content: center;
+    align-items: center;
 }
 
-.cuenta img{
+.cuenta img {
     width: 50px;
     height: 50px;
 }
@@ -63,12 +62,13 @@ header div div h1{
 /*USUARIOS*/
 
 .usuarios{
-    width: 600px;
-    height: 800px;
+    width: 600px; 
+    height: 700px; 
     background-color: #333;
     border-radius: 20px;
-    margin: 20px 0px 0px 20px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra debajo */
+    margin: 20px; /* Espaciado alrededor */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    overflow-y: auto; 
     outline: none; /* Elimina el contorno azul predeterminado */    
     float: left;
 }

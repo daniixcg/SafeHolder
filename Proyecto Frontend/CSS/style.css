@@ -7,6 +7,21 @@ body{
     width: 100%;
     margin: 0 auto;
 
+
+}
+
+.contenedor1{
+    width: 1024px;
+    height: 768px;
+    display: flex;
+    margin: 0 auto;
+}
+
+.contenedor2{
+    width: 450px;
+    height: 900px;
+    float: right;
+    
 }
 
 /*ESTA ES TODA LA PARTE DEL HEADER */

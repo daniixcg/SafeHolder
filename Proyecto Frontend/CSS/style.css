@@ -20,11 +20,14 @@ body{
 }
 
 .contenedor2{
+    position: fixed;
+    top: 80px; /* Espaciado desde la parte superior */
+    right: 1px; /* Espaciado desde el borde derecho */
     width: 450px;
     height: 900px;
-    float: left;
-    margin-left: 30px;
-    
+    border-radius: 20px;
+    color: white;
+    padding: 20px    
 }
 
 /*ESTA ES TODA LA PARTE DEL HEADER */
@@ -102,7 +105,7 @@ header div div h1{
 /* GRAFICO*/
 .grafico{
     width: 1400px;
-    height: 760px;
+    height: 650px;
     background-color: #333;
     border-radius: 20px;
     margin: 80px 0px 0px 20px;
@@ -244,8 +247,35 @@ header div div h1{
     max-width: 400px;
     margin: 20px auto;
 }
+.gold-container {
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 400px;
+    margin: 20px auto;
+}
+.euro-container {
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 400px;
+    margin: 20px auto;
+}
 
 #bitcoin-image {
+    width: 50px;
+    height: 50px;
+}#gold-image {
+    width: 50px;
+    height: 50px;
+}
+#euro-image {
     width: 50px;
     height: 50px;
 }

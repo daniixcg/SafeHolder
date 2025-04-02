@@ -56,8 +56,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
         </div>
     </header>
 
-    <div class="grafico">
+    <div class="grafico"> </div>
+
         <div class="compraVenta">
+
             <div class="compra">
                 <button class="BtnCompra">Comprar</button>
             </div>
@@ -68,12 +70,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             <div class="venta">
                 <button class="BtnVenta">Vender</button>
             </div>
+
         </div>
-    </div>
+    
 
     <div class="contenedor2">
         <div class="activos">
-            <h1>ACTIVOS</h1>
+            <h1>ACTIVOS </h1>
             <div class="container">
                 <div class="bitcoin-container">
                     <img src="./Images/bitcoin.png" alt="Bitcoin logo" width="50">

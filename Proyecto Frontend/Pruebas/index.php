@@ -1,4 +1,5 @@
 <?php
+
 // 🔹 CONFIGURACIÓN DE LA BASE DE DATOS
 $host = "192.168.232.100"; // 🔹 MODIFICAR: IP del servidor que tiene la BD
 $usuario = "safeuser"; // 🔹 MODIFICAR: Usuario de la BD

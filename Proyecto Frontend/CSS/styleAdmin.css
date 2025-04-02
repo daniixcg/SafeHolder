@@ -63,7 +63,7 @@ header div div h1{
 /*USUARIOS*/
 
 .usuarios{
-    width: 400px;
+    width: 600px;
     height: 800px;
     background-color: #333;
     border-radius: 20px;
@@ -77,4 +77,15 @@ header div div h1{
     color: white;
     text-align: center;
     margin: 10px auto;
+}
+
+.usuarios-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    color: white;
+}
+
+.usuarios-tabla th, .usuarios-tabla td {
+    padding: 10px;
+    border-bottom: 1px solid white;
 }

@@ -61,27 +61,22 @@ header div div h1{
 
 /*CUENTA*/
 .LoginCartera{
-    width: 200px; /* Ocupa todo el ancho */
-    height: 80px; /* Altura fija */
-    background-color: blue; /* Fondo oscuro */
-    color: white; /* Texto blanco */
-    display: flex; /* Flexbox para organizar los elementos */
-    justify-content: space-between; /* Espaciado entre los elementos */
-    align-items: center; /* Centra verticalmente los elementos */
-    padding: 0 20px; /* Espaciado interno a los lados */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    gap: 20px; 
+    width: 120px; 
+    height: 80px;
+    color: white; 
+    display: flex;
+    align-items: center;
+    padding: 0 20px; 
     margin-left: auto;
+    gap: 20px;
 }
 .cuenta, .valorCartera{
     margin-top: 1px;
     width: 50px;
     height: 50px;
-    margin-left: 10px;
     display: flex;
     justify-content: center; 
     align-items: center;  
-    background-color: red; 
 }
 
 .cuenta img, .valorCartera img{

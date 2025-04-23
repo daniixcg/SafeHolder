@@ -70,7 +70,7 @@ header div div h1{
 /*USUARIOS*/
 
 .usuarios{
-    width: 600px; 
+    width: auto; 
     height: 700px; 
     background-color: #333;
     border-radius: 20px;
@@ -140,3 +140,79 @@ button {
     opacity: 1;
     right: 0;
    }
+
+/*BOTON DESPLEGABLE*/
+/* Sidebar */
+.sidebar {
+    position: absolute; /* Posición relativa al contenedor padre */
+    top: 20px; /* Añade un margen superior para separarlo del borde superior */
+    left: calc(100% + 50px); /* Aparece al lado derecho del contenedor con un espacio de 50px */
+    width: 350px; /* Ancho fijo del sidebar */
+    height: auto; /* Ajusta la altura automáticamente según el contenido */
+    background-color: #333; /* Fondo oscuro */
+    color: white; /* Texto blanco */
+    padding: 20px; /* Espaciado interno */
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5); /* Sombra */
+    display: none; /* Oculto por defecto */
+    z-index: 10; /* Asegura que esté encima de otros elementos */
+    border-radius: 10px; /* Bordes redondeados */
+    font-family: 'Tektur', sans-serif; /* Fuente consistente */
+}
+
+.sidebar.active {
+    display: block; /* Muestra el sidebar cuando está activo */
+}
+
+.sidebar h2 {
+    margin-top: 0;
+    font-size: 24px;
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.sidebar form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaciado entre los elementos del formulario */
+}
+
+.sidebar label {
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.sidebar input,
+.sidebar select,
+.sidebar button {
+    padding: 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    width: 100%; /* Ocupa todo el ancho del contenedor */
+}
+
+.sidebar input,
+.sidebar select {
+    background-color: #444; /* Fondo de los campos */
+    color: white; /* Texto blanco */
+}
+
+.sidebar button {
+    background-color: #007bff; /* Fondo azul */
+    color: white; /* Texto blanco */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar button:hover {
+    background-color: #0056b3; /* Fondo azul más oscuro al pasar el cursor */
+}
+
+.sidebar button#cerrarSidebar {
+    background-color: #ff4d4d; /* Fondo rojo para el botón de cerrar */
+}
+
+.sidebar button#cerrarSidebar:hover {
+    background-color: #cc0000; /* Fondo rojo más oscuro al pasar el cursor */
+}

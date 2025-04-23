@@ -1,12 +1,13 @@
 body{
-    margin: auto;
+    margin: 0px;
     font-family: 'Tektur', sans-serif;
     background-color: #555555;
+    overflow: hidden;
+    height: 100%;
 }
 .container{
-    width: auto;
+    width: 100%;
     margin: 0 auto;
-
 }
 
 /*ESTA ES TODA LA PARTE DEL HEADER */
@@ -42,19 +43,26 @@ header div div h1{
 }
 
 /*CUENTA*/
-
-.cuenta {
-    margin-top: 1px;
-    width: 40px;
-    height: 40px;
+.LoginCartera{
+    width: 120px; 
+    height: 80px;
+    color: white; 
     display: flex;
-    margin-left: auto;
-    float: right;
-    justify-content: center;
     align-items: center;
+    padding: 0 20px; 
+    margin-left: auto;
+    gap: 20px;
+}
+.cuenta, .valorCartera{
+    margin-top: 1px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center; 
+    align-items: center;  
 }
 
-.cuenta img {
+.cuenta img, .valorCartera img{
     width: 50px;
     height: 50px;
 }
@@ -92,37 +100,43 @@ header div div h1{
 
 
 /*BOTON DESPLEGABLE*/ 
-
-.dropdown {
-    position: relative;
+/* From Uiverse.io by NorthFishHasNa */ 
+button {
     display: inline-block;
-}
-
-.dropbtn {
-    background-color: #4CAF50; /* Color del botón */
-    color: white; /* Color del texto */
-    padding: 10px; /* Espaciado */
-    font-size: 16px; /* Tamaño de fuente */
-    border: none; /* Sin borde */
-    cursor: pointer; /* Cambia el cursor al pasar encima */
-}
-
-.dropdown-content {
-    display: none; /* Ocultar por defecto */
-    position: absolute; /* Posición absoluta dentro del contenedor */
-    background-color: #f9f9f9; /* Color de fondo */
-    min-width: 160px; /* Ancho mínimo */
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); /* Sombra */
-    z-index: 1; /* Encima de otros elementos */
-}
-
-.dropdown-content a {
-    color: black; /* Color de enlace */
-    padding: 12px 16px; /* Espaciado */
-    text-decoration: none; /* Sin subrayado */
-    display: block; /* Desplegar como bloque */
-}
-
-.dropdown-content a:hover {
-    background-color: #f1f1f1; /* Color de fondo al pasar el ratón */
-}
+    border-radius: 4px;
+    background-color: #3d405b;
+    border: none;
+    color: #FFFFFF;
+    text-align: center;
+    font-size: 17px;
+    padding: 16px;
+    width: 130px;
+    transition: all 0.5s;
+    cursor: pointer;
+    margin: 5px;
+   }
+   
+   button span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+   }
+   
+   button span:after {
+    content: '»';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -15px;
+    transition: 0.5s;
+   }
+   
+   button:hover span {
+    padding-right: 15px;
+   }
+   
+   button:hover span:after {
+    opacity: 1;
+    right: 0;
+   }

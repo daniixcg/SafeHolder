@@ -38,46 +38,76 @@
         </div 
       </div>
     </header>
-    <div class="usuarios">
-      <h1>USUARIOS</h1>
-      <table class="usuarios-tabla">
-        <tr>
-          <th>Nom</th>
-          <th>Cognoms</th>
-          <th>DNI</th>
-          <th>Telefon</th>
-          <th>Gmail</th>
-          <th>Acción</th>
-        </tr>
-        <tr>
-          <td>Juan</td>
-          <td>Pérez</td>
-          <td>12345678A</td>
-          <td>600123456</td>
-          <td>juan@example.com</td>
-          <td>
-            <button class="btn-accion editar-btn">
-              <span>Editar</span>
-            </button>
-          </td>
-        </tr>
-        <tr>
-          <td>María</td>
-          <td>López</td>
-          <td>87654321B</td>
-          <td>600654321</td>
-          <td>maria@example.com</td>
-          <td>
-            <button class="btn-accion editar-btn">
-              <span>Editar</span>
-            </button>
-          </td>
-        </tr>
-      </table>
-      
-      <div class="sidebar" id="sidebar">
-        <h2>Editar Usuario</h2>
-        <form id="editarUsuarioForm">
+    <div class="conjunto">
+      <div class="usuarios">
+        <h1>USUARIOS</h1>
+        <table class="usuarios-tabla">
+          <tr>
+            <th>Nom</th>
+            <th>Cognoms</th>
+            <th>DNI</th>
+            <th>Telefon</th>
+            <th>Gmail</th>
+            <th>Acción</th>
+          </tr>
+          <tr>
+            <td>Juan</td>
+            <td>Pérez</td>
+            <td>12345678A</td>
+            <td>600123456</td>
+            <td>juan@example.com</td>
+            <td>
+              <button class="btn-accion editar-btn">
+                <span>Editar</span>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>María</td>
+            <td>López</td>
+            <td>87654321B</td>
+            <td>600654321</td>
+            <td>maria@example.com</td>
+            <td>
+              <button class="btn-accion editar-btn">
+                <span>Editar</span>
+              </button>
+            </td>
+          </tr>
+        </table>
+        
+        <div class="sidebar" id="sidebar">
+          <h2>Editar Usuario</h2>
+          <form id="editarUsuarioForm">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Nombre del usuario" />
+  
+            <label for="apellidos">Apellidos:</label>
+            <input type="text" id="apellidos" name="apellidos" placeholder="Apellidos del usuario" />
+  
+            <label for="dni">DNI:</label>
+            <input type="text" id="dni" name="dni" placeholder="DNI del usuario" />
+  
+            <label for="telefono">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono" placeholder="Teléfono del usuario" />
+  
+            <label for="correo">Correo:</label>
+            <input type="email" id="correo" name="correo" placeholder="Correo del usuario" />
+  
+            <button type="submit">Guardar Cambios</button>
+            <button type="button" id="borrarUsuario">Borrar Usuario</button>
+            <button type="button" id="cerrarSidebar">Cerrar</button>
+          </form>
+        </div>
+      </div>
+
+      <!--BOTON AGREGAR USUARIO-->
+      <button class="agregarUsuario">
+        <span>Añadir Nuevo Usuario</span>
+      </button>
+      <div class="sidebar2" id="sidebar2" style="display: none;">
+        <h2>Añadir Usuario</h2>
+        <form id="formAgregarUsuario">
           <label for="nombre">Nombre:</label>
           <input type="text" id="nombre" name="nombre" placeholder="Nombre del usuario" />
 
@@ -93,13 +123,12 @@
           <label for="correo">Correo:</label>
           <input type="email" id="correo" name="correo" placeholder="Correo del usuario" />
 
-          <button type="submit">Guardar Cambios</button>
-          <button type="button" id="borrarUsuario">Borrar Usuario</button>
-          <button type="button" id="cerrarSidebar">Cerrar</button>
+          <button type="submit" class="btn-accion">Añadir Usuario</button>
+          <button type="button" id="cerrarModal" class="btn-accion">Cerrar</button>
         </form>
       </div>
     </div>
-
+   
     <script type="module" src="../scripts/admin.js"></script>
   </body>
 </html>

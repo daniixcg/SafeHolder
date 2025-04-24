@@ -75,10 +75,12 @@ header div div h1{
     background-color: #333;
     border-radius: 20px;
     margin: 20px; /* Espaciado alrededor */
+    margin-left: 20%;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
     overflow-y: auto; 
     outline: none; /* Elimina el contorno azul predeterminado */    
     float: left;
+    
 }
 
 .usuarios h1{
@@ -220,7 +222,7 @@ button {
 /*Añadir usuario*/
 .agregarUsuario {
     display: block; /* Asegura que el botón ocupe toda la línea */
-    margin-left: 12%; /* Centra el botón horizontalmente y añade un margen superior */
+    margin-left: 33%; /* Centra el botón horizontalmente y añade un margen superior */
     border-radius: 4px;
     background-color: #3d405b;
     border: none;
@@ -242,14 +244,16 @@ button {
 /*BOTON DESPLEGABLE AÑADIR USUARIO*/
 .sidebar2 {
     position: fixed;
-    top: 50%;
+    top: 49%; 
     left: 50%;
+    margin-left: 20%;
     transform: translate(-50%, -50%);
     background-color: #333;
     color: white;
     padding: 20px;
     border-radius: 10px;
-    width: 400px;
+    width: 400px; /* Ancho fijo del sidebar */
+    height: auto; /* Ajusta la altura automáticamente según el contenido */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     display: none; /* Oculto por defecto */
     z-index: 1000;

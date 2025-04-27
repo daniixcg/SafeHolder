@@ -60,29 +60,4 @@ function obtenerPrecioBitcoinUSD() {
 }
 
 // Función para ejecutar el archivo PHP y actualizar la base de datos
-function ejecutarArchivoPHP() {
-    fetch('../php/update.php')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al ejecutar el archivo PHP');
-            }
-            return response.text(); // Leer la respuesta del PHP
-        })
-        .then(data => {
-            console.log('Respuesta del servidor:', data); // Mostrar respuesta del PHP en la consola
-        })
-        .catch(error => {
-            console.error('Error al ejecutar el archivo PHP:', error);
-        });
-}
-
-// Función para actualizar el precio del Bitcoin
-function actualizarPrecioBitcoin() {
-    // Llamar a ambas funciones de forma independiente
-    obtenerPrecioBitcoinUSD(); // Actualizar el precio en el DOM
-    ejecutarArchivoPHP(); // Actualizar el precio en la base de datos
-}
-
-// Llamar a la función para actualizar el precio del Bitcoin cada 60 segundos
-actualizarPrecioBitcoin();
-setInterval(actualizarPrecioBitcoin, 60000);
+setInterval(obtenerPrecioBitcoinUSD, 60000);

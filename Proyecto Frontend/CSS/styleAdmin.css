@@ -1,3 +1,4 @@
+
 body{
     margin: 0px;
     font-family: 'Tektur', sans-serif;
@@ -145,78 +146,63 @@ button {
 
 /*BOTON DESPLEGABLE EDITAR*/
 .sidebar {
-    position: absolute; /* Posición relativa al contenedor padre */
-    top: 20px; /* Añade un margen superior para separarlo del borde superior */
-    left: calc(100% + 50px); /* Aparece al lado derecho del contenedor con un espacio de 50px */
+    position: fixed;
+    top: 49%; 
+    left: 50%;
+    margin-left: 20%;
+    transform: translate(-50%, -50%);
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
     width: 400px; /* Ancho fijo del sidebar */
     height: auto; /* Ajusta la altura automáticamente según el contenido */
-    background-color: #333; /* Fondo oscuro */
-    color: white; /* Texto blanco */
-    padding: 20px; /* Espaciado interno */
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5); /* Sombra */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     display: none; /* Oculto por defecto */
-    z-index: 10; /* Asegura que esté encima de otros elementos */
-    border-radius: 10px; /* Bordes redondeados */
-    font-family: 'Tektur', sans-serif; /* Fuente consistente */
-    margin-left: 1%;
-}
-
-.sidebar.active {
-    display: block; /* Muestra el sidebar cuando está activo */
+    z-index: 1000;
+    font-family: 'Tektur', sans-serif;
 }
 
 .sidebar h2 {
-    margin-top: 0;
-    font-size: 24px;
     text-align: center;
-    color: #ffffff;
     margin-bottom: 20px;
+    font-size: 24px;
+    color: #ffffff;
 }
 
 .sidebar form {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Espaciado entre los elementos del formulario */
+    gap: 15px;
 }
 
-.sidebar label {
-    font-size: 14px;
-    color: #ffffff;
-}
-
-.sidebar input,
+.sidebar input, 
 .sidebar select,
 .sidebar button {
     padding: 10px;
     font-size: 14px;
     border: none;
     border-radius: 5px;
-    width: 95%; /* Ocupa todo el ancho del contenedor */
-}
-
-.sidebar input,
-.sidebar select {
-    background-color: #444; /* Fondo de los campos */
-    color: white; /* Texto blanco */
+    width: 95%;
 }
 
 .sidebar button {
-    background-color: #007bff; /* Fondo azul */
-    color: white; /* Texto blanco */
+    background-color: #388E3C;
+    color: white;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .sidebar button:hover {
-    background-color: #0056b3; /* Fondo azul más oscuro al pasar el cursor */
+    background-color: #2E7D32;
 }
 
 .sidebar button#cerrarSidebar {
-    background-color: #ff4d4d; /* Fondo rojo para el botón de cerrar */
+    background-color: #ff4d4d;
 }
 
 .sidebar button#cerrarSidebar:hover {
-    background-color: #cc0000; /* Fondo rojo más oscuro al pasar el cursor */
+    background-color: #cc0000;
 }
 
 /*Añadir usuario*/

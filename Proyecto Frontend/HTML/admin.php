@@ -1,6 +1,6 @@
 <?php
 // Conexión a la base de datos
-$servername = "192.168.1.100";  // Dirección IP del servidor de base de datos
+$servername = "192.168.232.100";  // Dirección IP del servidor de base de datos
 $username = "safeuser";         // Usuario de la base de datos
 $password = "adie";             // Contraseña de la base de datos
 $dbname = "SafeHolder";         // Nombre de la base de datos
@@ -70,7 +70,6 @@ if (isset($_POST['eliminar'])) {
         <div class="titulo"><h1>SafeHolder</h1></div>
         <div class="LoginCartera">
             <div class="valorCartera">
-                <!--Aquí poner el php para saber el dinero que tiene el usuario-->
                 <img src="../Images/valorCartera.png" alt="VALOR CARTERA">
             </div>
             <div class="cuenta">
@@ -109,7 +108,7 @@ if (isset($_POST['eliminar'])) {
                                         <input type='hidden' name='idusuari' value='" . $row['idusuari'] . "' />
                                         <button type='submit' name='eliminar' class='btn-accion eliminar-btn'>Borrar</button>
                                     </form>
-                                    <button class='btn-accion editar-btn' onclick='editarUsuario(" . $row['idusuari'] . ")'>Editar</button>
+                                    <button class='btn-accion editar-btn' onclick='editarUsuario(" . $row['idusuari'] . ", `" . $row['nom'] . "`, `" . $row['cognoms'] . "`, `" . $row['dni'] . "`, `" . $row['telefon'] . "`, `" . $row['gmail'] . "`)'>Editar</button>
                                 </td>
                               </tr>";
                     }
@@ -120,7 +119,7 @@ if (isset($_POST['eliminar'])) {
             </table>
 
             <!-- Sidebar para editar y eliminar -->
-            <div class="sidebar" id="sidebar">
+            <div class="sidebar" id="sidebar" style="display: none;">
                 <h2>Editar Usuari</h2>
                 <form id="editarUsuarioForm" method="POST">
                     <input type="hidden" id="idusuari" name="idusuari" />
@@ -143,6 +142,7 @@ if (isset($_POST['eliminar'])) {
                     <input type="password" id="contrasenya" name="contrasenya" placeholder="Contrasenya" />
 
                     <button type="submit">Guardar Canvis</button>
+                    <button type="submit" name="eliminar" id="eliminarUsuario">Eliminar</button>
                     <button type="button" id="cerrarSidebar">Tancar</button>
                 </form>
             </div>
@@ -152,6 +152,8 @@ if (isset($_POST['eliminar'])) {
         <button class="agregarUsuario" onclick="document.getElementById('sidebar2').style.display='block'">
             <span>Afegeix Nou Usuari</span>
         </button>
+
+        <!-- Sidebar para agregar usuario -->
         <div class="sidebar2" id="sidebar2" style="display: none;">
             <h2>Afegeix Usuari</h2>
             <form method="POST" id="formAgregarUsuario">
@@ -180,12 +182,20 @@ if (isset($_POST['eliminar'])) {
     </div>
 
     <script>
-        function editarUsuario(id) {
+        function editarUsuario(id, nom, cognoms, dni, telefon, gmail) {
             // Mostrar el sidebar con la información del usuario a editar
             document.getElementById('sidebar').style.display = 'block';
-            // Aquí agregarías la lógica para cargar los datos del usuario a editar
             document.getElementById('idusuari').value = id;
+            document.getElementById('nom').value = nom;
+            document.getElementById('cognoms').value = cognoms;
+            document.getElementById('dni').value = dni;
+            document.getElementById('telefon').value = telefon;
+            document.getElementById('gmail').value = gmail;
         }
+
+        document.getElementById('cerrarSidebar').addEventListener('click', function() {
+            document.getElementById('sidebar').style.display = 'none';
+        });
     </script>
 
 </body>

@@ -1,0 +1,136 @@
+<?php
+// --- SI ES UNA PETICIÓN AJAX DEVOLVEMOS LOS DATOS ---
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    $conn = new mysqli("192.168.232.100", "safeuser", "adie", "SafeHolder");
+    if ($conn->connect_error) {
+        http_response_code(500);
+        echo json_encode(["error" => "DB connection failed"]);
+        exit;
+    }
+
+    $sql = "SELECT idactiu, valor FROM actius WHERE idactiu IN (1, 2, 3)";
+    $result = $conn->query($sql);
+    $valores = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $valores[$row["idactiu"]] = $row["valor"];
+    }
+
+    echo json_encode($valores);
+    exit;
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeHolder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400..900&display=swap" rel="stylesheet">
+    <link rel="icon" href="./Images/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="./CSS/style.css">
+</head>
+
+<body>
+    <header class="headerContainer">
+        <div>
+            <img class="imagenHeader" src="./Images/logoSinFondo.png" alt="SafeHolder Logo">
+        </div>
+        
+        <div class="titulo">
+            <h1>SafeHolder</h1>
+        </div>
+        <div class="LoginCartera">
+            <div class="valorCartera">   
+                <img src="./Images/valorCartera.png" alt="VALOR CARTERA">
+            </div>
+            <div class="cuenta">
+                <a href="./HTML/login.html">
+                    <img src="./Images/cuenta.png" alt="CUENTA">
+                </a>
+            </div> 
+        </div>
+    </header>
+
+    <div class="grafico">
+        <div class="compraVenta">
+            <div class="compra">
+                <button class="BtnCompra">Comprar</button>
+            </div>
+            <div class="cantidad">
+                <h3>Cantidad</h3>
+                <input type="number">
+            </div>
+            <div class="venta">
+                <button class="BtnVenta">Vender</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="contenedor2">
+        <div class="activos">
+            <h1>ACTIVOS</h1>
+            <div class="container">
+                <div class="bitcoin-container">
+                    <img src="./Images/bitcoin.png" alt="Bitcoin logo" width="50">
+                    <div class="valor" id="valor-bitcoin">Cargando...</div>
+                </div>
+                <div class="gold-container">
+                    <img src="./Images/oro.png" alt="Oro logo" width="50">
+                    <div class="valor" id="valor-oro">Cargando...</div>
+                </div>
+                <div class="euro-container">
+                    <img src="./Images/euro.png" alt="Euro logo" width="50">
+                    <div class="valor" id="valor-euro">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cambio">
+            <h1>SWAP</h1>
+            <div class="container">
+                <div class="Activos"></div>
+                <div class="Activos"></div>
+                <div class="Activos"></div>
+                <div class="botonC">
+                    <button class="boton">Swap</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const anterior = { 1: null, 2: null, 3: null };
+
+        async function cargarValores() {
+            try {
+                const res = await fetch("?ajax=1");
+                const datos = await res.json();
+
+                if (datos[1] !== undefined && datos[1] !== anterior[1]) {
+                    document.getElementById("valor-bitcoin").textContent = datos[1];
+                    anterior[1] = datos[1];
+                }
+                if (datos[2] !== undefined && datos[2] !== anterior[2]) {
+                    document.getElementById("valor-oro").textContent = datos[2];
+                    anterior[2] = datos[2];
+                }
+                if (datos[3] !== undefined && datos[3] !== anterior[3]) {
+                    document.getElementById("valor-euro").textContent = datos[3];
+                    anterior[3] = datos[3];
+                }
+            } catch (err) {
+                console.error("Error al cargar valores:", err);
+            }
+        }
+
+        cargarValores();
+        setInterval(cargarValores, 2000);
+    </script>
+
+</body>
+</html>

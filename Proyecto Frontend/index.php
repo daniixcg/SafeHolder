@@ -33,6 +33,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400..900&display=swap" rel="stylesheet">
     <link rel="icon" href="./Images/favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="./CSS/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -56,22 +57,57 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
         </div>
     </header>
 
-    <div class="grafico"> </div>
+    <div class="grafico"> 
+        <canvas id="performanceChart" width="400" height="200"></canvas>
+        <script>
+            const ctx = document.getElementById('performanceChart').getContext('2d');
 
-        <div class="compraVenta">
+            const performanceChart = new Chart(ctx, {
+                type: 'line', // tipo de gráfico
+                data: {
+                    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'], // meses
+                    datasets: [{
+                        label: 'Performance',
+                        data: [65, 59, 80, 81, 56, 75], // los valores
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // color de fondo
+                        borderColor: 'rgba(75, 192, 192, 1)', // color de línea
+                        borderWidth: 2,
+                        fill: true, // rellena el área debajo de la línea
+                        tension: 0.3, // suaviza la línea
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Gráfico de Performance'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true // empieza desde 0
+                        }
+                    }
+                }
+            });
+        </script>
+    </div>
 
-            <div class="compra">
-                <button class="BtnCompra">Comprar</button>
-            </div>
-            <div class="cantidad">
-                <h3>Cantidad</h3>
-                <input type="number">
-            </div>
-            <div class="venta">
-                <button class="BtnVenta">Vender</button>
-            </div>
+    <div class="compraVenta">
 
+        <div class="compra">
+            <button class="BtnCompra">Comprar</button>
         </div>
+        <div class="cantidad">
+            <h3>Cantidad</h3>
+            <input type="number">
+        </div>
+        <div class="venta">
+            <button class="BtnVenta">Vender</button>
+        </div>
+
+    </div>
     
 
     <div class="contenedor2">

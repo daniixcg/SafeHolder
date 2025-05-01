@@ -1,6 +1,6 @@
 <?php
 // Conexión a la base de datos
-$servername = "192.168.232.100";  // Dirección IP del servidor de base de datos
+$servername = "192.168.1.100";  // Dirección IP del servidor de base de datos
 $username = "safeuser";         // Usuario de la base de datos
 $password = "adie";             // Contraseña de la base de datos
 $dbname = "SafeHolder";         // Nombre de la base de datos
@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
                 VALUES ('$nom', '$cognoms', '$dni', '$telefon', '$gmail', '$contrasenya')";
         
         if ($conn->query($sql) === TRUE) {
-            
+
         } else {
             echo "Error: " . $sql . "<br>" . $conn->error;
         }
@@ -45,8 +45,41 @@ if (isset($_POST['eliminar'])) {
     $sql = "DELETE FROM usuaris WHERE idusuari = '$idusuari'";
 
     if ($conn->query($sql) === TRUE) {
+
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+}
+
+// Verificar si se ha enviado el formulario de editar usuario
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
+    $idusuari = $_POST['idusuari'];
+    $nom = $_POST['nom'];
+    $cognoms = $_POST['cognoms'];
+    $dni = $_POST['dni'];
+    $telefon = $_POST['telefon'];
+    $gmail = $_POST['gmail'];
+    $contrasenya = $_POST['contrasenya'];
+
+    // Validar los datos antes de hacer el UPDATE
+    if (empty($nom) || empty($cognoms) || empty($dni) || empty($telefon) || empty($gmail) || empty($contrasenya)) {
+        echo "Per favor, completa tots els camps.";
+    } else {
+        // Consulta UPDATE para actualizar el usuario
+        $sql = "UPDATE usuaris SET 
+                nom='$nom', 
+                cognoms='$cognoms', 
+                dni='$dni', 
+                telefon='$telefon', 
+                gmail='$gmail', 
+                contrasenya='$contrasenya'
+                WHERE idusuari='$idusuari'";
+
+        if ($conn->query($sql) === TRUE) {
+
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
     }
 }
 
@@ -88,11 +121,12 @@ if (isset($_POST['eliminar'])) {
                     <th>DNI</th>
                     <th>Telèfon</th>
                     <th>Correu</th>
+                    <th>Contrasenya</th>
                     <th>Acció</th>
                 </tr>
                 <?php
                 // Consulta para obtener los usuarios
-                $sql = "SELECT idusuari, nom, cognoms, dni, telefon, gmail FROM usuaris";
+                $sql = "SELECT idusuari, nom, cognoms, dni, telefon, gmail , contrasenya FROM usuaris";
                 $result = $conn->query($sql);
 
                 if ($result->num_rows > 0) {
@@ -103,12 +137,12 @@ if (isset($_POST['eliminar'])) {
                                 <td>" . $row['dni'] . "</td>
                                 <td>" . $row['telefon'] . "</td>
                                 <td>" . $row['gmail'] . "</td>
+                                <td>" . $row['contrasenya'] . "</td>
                                 <td>
                                     <form method='POST' style='display:inline;'>
                                         <input type='hidden' name='idusuari' value='" . $row['idusuari'] . "' />
-                                        <button type='submit' name='eliminar' class='btn-accion eliminar-btn'>Borrar</button>
                                     </form>
-                                    <button class='btn-accion editar-btn' onclick='editarUsuario(" . $row['idusuari'] . ", `" . $row['nom'] . "`, `" . $row['cognoms'] . "`, `" . $row['dni'] . "`, `" . $row['telefon'] . "`, `" . $row['gmail'] . "`)'>Editar</button>
+                                    <button class='btn-accion editar-btn' onclick='editarUsuario(" . $row['idusuari'] . ", `" . $row['nom'] . "`, `" . $row['cognoms'] . "`, `" . $row['dni'] . "`, `" . $row['telefon'] . "`, `" . $row['gmail'] . "`, `" . $row['contrasenya'] . "`)'>Editar</button>
                                 </td>
                               </tr>";
                     }
@@ -139,9 +173,9 @@ if (isset($_POST['eliminar'])) {
                     <input type="email" id="gmail" name="gmail" placeholder="Correu de l'usuari" />
 
                     <label for="contrasenya">Contrasenya:</label>
-                    <input type="password" id="contrasenya" name="contrasenya" placeholder="Contrasenya" />
+                    <input type="text" id="contrasenya" name="contrasenya" placeholder="Contrasenya" />
 
-                    <button type="submit">Guardar Canvis</button>
+                    <button type="submit" name="guardar">Guardar Canvis</button>
                     <button type="submit" name="eliminar" id="eliminarUsuario">Eliminar</button>
                     <button type="button" id="cerrarSidebar">Tancar</button>
                 </form>
@@ -173,7 +207,7 @@ if (isset($_POST['eliminar'])) {
                 <input type="email" id="gmail" name="gmail" placeholder="Correu de l'usuari" required />
 
                 <label for="contrasenya">Contrasenya:</label>
-                <input type="password" id="contrasenya" name="contrasenya" placeholder="Contrasenya" required />
+                <input type="text" id="contrasenya" name="contrasenya" placeholder="Contrasenya" required />
 
                 <button type="submit" class="btn-accion" name="agregar">Afegeix Usuari</button>
                 <button type="button" id="cerrarModal" class="btn-accion" onclick="document.getElementById('sidebar2').style.display='none'">Tancar</button>
@@ -182,7 +216,7 @@ if (isset($_POST['eliminar'])) {
     </div>
 
     <script>
-        function editarUsuario(id, nom, cognoms, dni, telefon, gmail) {
+        function editarUsuario(id, nom, cognoms, dni, telefon, gmail , contrasenya) {
             // Mostrar el sidebar con la información del usuario a editar
             document.getElementById('sidebar').style.display = 'block';
             document.getElementById('idusuari').value = id;
@@ -191,6 +225,7 @@ if (isset($_POST['eliminar'])) {
             document.getElementById('dni').value = dni;
             document.getElementById('telefon').value = telefon;
             document.getElementById('gmail').value = gmail;
+            document.getElementById('contrasenya').value = contrasenya;
         }
 
         document.getElementById('cerrarSidebar').addEventListener('click', function() {

@@ -65,11 +65,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             const performanceChart = new Chart(ctx, {
                 type: 'line', // tipo de gráfico
                 data: {
-                    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'], // meses
-                    datasets: [{
+                    labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48'],                    datasets: [{
                         label: 'Performance',
-                        data: [65, 59, 80, 81, 56, 75], // los valores
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // color de fondo
+                        data: [65, 59, 80, 81, 56, 75, 99, 88, 76, 1, 34, 67, 92, 43, 78, 60, 85, 47, 90, 72, 39, 54, 66, 29, 70, 82, 93, 24, 50, 61, 19, 44, 38, 73, 87, 31, 69, 95, 62, 18, 22, 40, 13, 84, 100, 36, 15, 58],                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // color de fondo
                         borderColor: 'rgba(75, 192, 192, 1)', // color de línea
                         borderWidth: 2,
                         fill: true, // rellena el área debajo de la línea

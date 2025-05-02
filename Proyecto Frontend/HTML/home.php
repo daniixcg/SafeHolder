@@ -18,7 +18,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
         exit;
     }
 
-    // Obtener los valores de los activos (Bitcoin, Oro, Euro)
     $sql = "SELECT idactiu, valor FROM actius WHERE idactiu IN (1, 2, 3)";
     $result = $conn->query($sql);
     $valores = [];
@@ -27,7 +26,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
         $valores[$row["idactiu"]] = $row["valor"];
     }
 
-    // Obtener el saldo de dólares del usuario
     $sql = "SELECT dolars FROM usuaris WHERE nom = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $usuario);
@@ -36,20 +34,63 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     $stmt->fetch();
     $stmt->close();
 
-    // Cerrar conexión a la base de datos
     $conn->close();
 
-    // Añadir los valores de activos y el saldo de dólares al array de respuesta
     $valores['dollars'] = $dollars;
 
-    // Devolver los datos en formato JSON
     echo json_encode($valores);
     exit;
 }
 
-// Si no es una petición AJAX, se continúa con la carga de la página normal
+// --- PETICIÓN PARA DATOS DEL GRÁFICO POR ACTIVO ---
+if (isset($_GET['grafico'])) {
+    $tipo = $_GET['grafico'];
+    $tabla = "";
 
-// Obtener el saldo de dólares para mostrar en el header
+    switch ($tipo) {
+        case "bitcoin":
+            $tabla = "bitcoinHistoric";
+            break;
+        case "euro":
+            $tabla = "euroHistoric";
+            break;
+        case "oro":
+            $tabla = "orHistoric";
+            break;
+        default:
+            http_response_code(400);
+            echo json_encode(["error" => "Tipo de activo inválido"]);
+            exit;
+    }
+
+    $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
+    if ($conn->connect_error) {
+        http_response_code(500);
+        echo json_encode(["error" => "DB connection failed"]);
+        exit;
+    }
+
+    $sql = "SELECT fecha, valor FROM $tabla ORDER BY fecha DESC LIMIT 10";
+    $result = $conn->query($sql);
+    $labels = [];
+    $data = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $labels[] = date("H:i", strtotime($row["fecha"]));
+        $data[] = floatval($row["valor"]);
+    }
+
+    $datos["labels"] = array_reverse($labels);
+    $datos["data"] = array_reverse($data);
+
+    $conn->close();
+
+    header('Content-Type: application/json');
+    echo json_encode($datos);
+    exit;
+}
+
+// Si no es una petición AJAX, se continúa con la carga de la página normal
 $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -69,79 +110,41 @@ $conn->close();
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>SafeHolder</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400..900&display=swap" rel="stylesheet">
-    <link rel="icon" href="../Images/favicon.png" type="image/x-icon">
-    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../CSS/style.css"/>
+    <link rel="icon" href="../Images/favicon.png" type="image/x-icon"/>
+    <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400..900&display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
     <header class="headerContainer">
         <div>
-            <img class="imagenHeader" src="../Images/logoSinFondo.png" alt="SafeHolder Logo">
+            <img class="imagenHeader" src="../Images/logoSinFondo.png" alt="SafeHolder Logo" />
         </div>
-        
         <div class="titulo">
             <h1>SafeHolder</h1>
         </div>
-
-        <!-- Mostrar el mensaje de bienvenida y el saldo en dólares -->
         <div class="bienvenida">
             <h2>Bienvenido, <?php echo htmlspecialchars($usuario); ?>!</h2>
-            <p>Saldo en dólares: <?php echo number_format($dollars, 2); ?> USD</p> <!-- Mostrar el saldo -->
+            <p>Saldo en dólares: <?php echo number_format($dollars, 2); ?> USD</p>
         </div>
-
         <div class="LoginCartera">
-            <div class="valorCartera">   
-                <img src="../Images/valorCartera.png" alt="VALOR CARTERA">
+            <div class="valorCartera">
+                <img src="../Images/valorCartera.png" alt="VALOR CARTERA" />
             </div>
             <div class="cuenta">
                 <a href="../index.php">
-                    <img src="../Images/cuenta.png" alt="CUENTA">
+                    <img src="../Images/cuenta.png" alt="CUENTA" />
                 </a>
-            </div> 
+            </div>
         </div>
     </header>
-    <div class="grafico"> 
-        <canvas id="performanceChart" width="400" height="200"></canvas>
-        <script>
-            const ctx = document.getElementById('performanceChart').getContext('2d');
 
-            const performanceChart = new Chart(ctx, {
-                type: 'line', // tipo de gráfico
-                data: {
-                    labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48'],                    
-                    datasets: [{
-                        label: 'Performance',
-                        data: [65, 59, 80, 81, 56, 75, 99, 88, 76, 1, 34, 67, 92, 43, 78, 60, 85, 47, 90, 72, 39, 54, 66, 29, 70, 82, 93, 24, 50, 61, 19, 44, 38, 73, 87, 31, 69, 95, 62, 18, 22, 40, 13, 84, 100, 36, 15, 58],
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // color de fondo
-                        borderColor: 'rgba(75, 192, 192, 1)', // color de línea
-                        borderWidth: 2,
-                        fill: true, // rellena el área debajo de la línea
-                        tension: 0.3, // suaviza la línea
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Gráfico de Performance'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true // empieza desde 0
-                        }
-                    }
-                }
-            });
-        </script>
+    <div class="grafico">
+        <canvas id="performanceChart" width="400" height="200"></canvas>
     </div>
 
     <div class="compraVenta">
@@ -150,7 +153,7 @@ $conn->close();
         </div>
         <div class="cantidad">
             <h3>Cantidad</h3>
-            <input type="number">
+            <input type="number" />
         </div>
         <div class="venta">
             <button class="BtnVenta">Vender</button>
@@ -161,16 +164,16 @@ $conn->close();
         <div class="activos">
             <h1>ACTIVOS </h1>
             <div class="container">
-                <div class="bitcoin-container">
-                    <img src="../Images/bitcoin.png" alt="Bitcoin logo" width="50">
+                <div class="bitcoin-container activo-btn" data-activo="bitcoin">
+                    <img src="../Images/bitcoin.png" alt="Bitcoin logo" width="50" />
                     <div class="valor" id="valor-bitcoin">Cargando...</div>
                 </div>
-                <div class="gold-container">
-                    <img src="../Images/oro.png" alt="Oro logo" width="50">
+                <div class="gold-container activo-btn" data-activo="oro">
+                    <img src="../Images/oro.png" alt="Oro logo" width="50" />
                     <div class="valor" id="valor-oro">Cargando...</div>
                 </div>
-                <div class="euro-container">
-                    <img src="../Images/euro.png" alt="Euro logo" width="50">
+                <div class="euro-container activo-btn" data-activo="euro">
+                    <img src="../Images/euro.png" alt="Euro logo" width="50" />
                     <div class="valor" id="valor-euro">Cargando...</div>
                 </div>
             </div>
@@ -210,9 +213,7 @@ $conn->close();
                     anterior[3] = datos[3];
                 }
 
-                // Mostrar el saldo en dólares
                 if (datos.dollars !== undefined && datos.dollars !== anterior.dollars) {
-                    console.log("Saldo en dólares:", datos.dollars); // Para depurar el valor de dólares
                     anterior.dollars = datos.dollars;
                 }
             } catch (err) {
@@ -222,6 +223,76 @@ $conn->close();
 
         cargarValores();
         setInterval(cargarValores, 2000);
+    </script>
+
+    <script>
+        let chart;
+        let activoActual = "bitcoin";
+
+        async function cargarGrafico(activo) {
+            try {
+                const res = await fetch("?grafico=" + activo);
+                const datos = await res.json();
+                const ctx = document.getElementById("performanceChart").getContext("2d");
+
+                if (chart) {
+                    chart.data.labels = datos.labels;
+                    chart.data.datasets[0].data = datos.data;
+                    chart.data.datasets[0].label = `Histórico de ${activo.charAt(0).toUpperCase() + activo.slice(1)}`;
+                    chart.update();
+                } else {
+                    chart = new Chart(ctx, {
+                        type: "line",
+                        data: {
+                            labels: datos.labels,
+                            datasets: [{
+                                label: `Histórico de ${activo.charAt(0).toUpperCase() + activo.slice(1)}`,
+                                data: datos.data,
+                                backgroundColor: "rgba(75, 192, 192, 0.2)",
+                                borderColor: "rgba(75, 192, 192, 1)",
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: "Gráfico Histórico"
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    ticks: {
+                                        stepSize: 1000
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                activoActual = activo;
+            } catch (err) {
+                console.error("Error al cargar gráfico:", err);
+            }
+        }
+
+        // Inicia con Bitcoin
+        cargarGrafico("bitcoin");
+
+        document.querySelectorAll(".activo-btn").forEach(btn => {
+            btn.style.cursor = "pointer";
+            btn.addEventListener("click", () => {
+                const tipo = btn.dataset.activo;
+                if (tipo) {
+                    cargarGrafico(tipo);
+                }
+            });
+        });
     </script>
 
 </body>

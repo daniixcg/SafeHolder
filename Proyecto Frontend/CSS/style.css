@@ -73,7 +73,7 @@ header div div h1{
     margin-left: auto;
     gap: 20px;
 }
-.cuenta, .valorCartera{
+.cuenta, .valorCartera, .puertaSalida{
     margin-top: 1px;
     width: 50px;
     height: 50px;
@@ -82,7 +82,7 @@ header div div h1{
     align-items: center;  
 }
 
-.cuenta img, .valorCartera img{
+.cuenta img, .valorCartera img, .puertaSalida img{
     width: 50px;
     height: 50px;
 }

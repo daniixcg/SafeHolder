@@ -140,6 +140,11 @@ $conn->close();
                     <img src="../Images/cuenta.png" alt="CUENTA" />
                 </a>
             </div>
+            <div class="puertaSalida">
+                <a href="../index.php">
+                    <img src="../Images/ingresar.png" alt="CERRAR SESSION" />
+                </a>
+            </div>
         </div>
     </header>
 

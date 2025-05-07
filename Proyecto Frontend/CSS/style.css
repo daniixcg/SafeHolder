@@ -9,7 +9,6 @@ body{
     width: 100%;
     margin: 0 auto;
 
-
 }
 
 .contenedor1{
@@ -73,7 +72,7 @@ header div div h1{
     margin-left: auto;
     gap: 20px;
 }
-.cuenta, .valorCartera, .puertaSalida{
+.cuenta, .valorCartera{
     margin-top: 1px;
     width: 50px;
     height: 50px;
@@ -82,7 +81,7 @@ header div div h1{
     align-items: center;  
 }
 
-.cuenta img, .valorCartera img, .puertaSalida img{
+.cuenta img, .valorCartera img{
     width: 50px;
     height: 50px;
 }
@@ -229,10 +228,9 @@ header div div h1{
     text-align: center;
     margin: 15px auto;
 }
-
-
-
-
+.cantidad{
+    color: white
+}
 
 /*AQUI VA TODO LO DE LAS CRIPTOMONEDAS*/
 
@@ -284,4 +282,98 @@ header div div h1{
     color: white;
     font-size: 20px;
     font-family: Arial, sans-serif;
+}
+
+/* Estilos para el contenedor de Swap */
+.cambio {
+    background-color: #333;
+    border-radius: 15px;
+    padding: 15px; /* Reducir padding para ajustarse al tamaño */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    color: white;
+    font-family: 'Tektur', sans-serif;
+    margin: 20px auto;
+    width: 400px; /* Mantener el ancho */
+    height: 320px; /* Mantener la altura */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Espaciado uniforme */
+}
+
+/* Título del Swap */
+.cambio h1 {
+    text-align: center;
+    font-size: 20px; /* Ajustar tamaño del texto */
+    margin-bottom: 1px;
+}
+
+/* Estilos para el formulario */
+#swapForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Reducir espacio entre elementos */
+    height: 90%; /* Asegurar que el formulario ocupe el espacio disponible */
+    justify-content: space-between; /* Distribuir elementos uniformemente */
+}
+
+#swapForm label {
+    font-size: 14px; /* Reducir tamaño del texto */
+    font-weight: bold;
+}
+
+#swapForm select,
+#swapForm input {
+    padding: 8px; /* Reducir padding */
+    font-size: 14px; /* Reducir tamaño del texto */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f4f4f4;
+    color: #333;
+    width: 100%; /* Asegurar que no exceda el ancho del contenedor */
+    box-sizing: border-box; /* Incluir padding y borde en el ancho total */
+}
+
+#swapForm select:focus,
+#swapForm input:focus {
+    outline: none;
+    border-color: #727FFF;
+    box-shadow: 0px 0px 5px rgba(114, 127, 255, 0.5);
+}
+
+/* Botón de Swap */
+#swapForm .boton {
+    padding: 13px; /* Reducir padding */
+    font-size: 16px; /* Ajustar tamaño del texto */
+    font-weight: bold;
+    color: white;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#swapForm .boton:hover {
+    background-color: #45a049;
+    transform: scale(1.03); /* Reducir el efecto de escala */
+}
+
+#swapForm .boton:active {
+    background-color: #3e8e41;
+}
+
+/* Ajustes para dispositivos pequeños */
+@media (max-width: 768px) {
+    .cambio {
+        max-width: 90%;
+        height: auto; /* Permitir altura dinámica en pantallas pequeñas */
+    }
+
+    #swapForm {
+        gap: 8px; /* Reducir espacio entre elementos */
+    }
+
+    #swapForm .boton {
+        font-size: 14px; /* Reducir tamaño del texto */
+    }
 }

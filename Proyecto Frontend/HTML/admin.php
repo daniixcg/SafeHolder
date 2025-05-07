@@ -1,6 +1,6 @@
 <?php
 // Conexión a la base de datos
-$servername = "192.168.1.100";  // Dirección IP del servidor de base de datos
+$servername = "192.168.232.100";  // Dirección IP del servidor de base de datos
 $username = "safeuser";         // Usuario de la base de datos
 $password = "adie";             // Contraseña de la base de datos
 $dbname = "SafeHolder";         // Nombre de la base de datos

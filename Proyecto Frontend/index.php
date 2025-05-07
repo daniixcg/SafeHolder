@@ -1,6 +1,6 @@
 <?php
 // Configuración de la base de datos
-$servername = "192.168.1.100";
+$servername = "192.168.232.100";
 $username = "safeuser";
 $password = "adie";
 $dbname = "SafeHolder";
@@ -56,13 +56,13 @@ $conn->close();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@400..900&display=swap" rel="stylesheet">
-    <link rel="icon" href="../Images/favicon.png" type="image/x-icon">
-    <link rel="stylesheet" href="../CSS/styleLogin.css">
+    <link rel="icon" href="./Images/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="./CSS/styleLogin.css">
 </head>
 <body>
     <div class="flotante">
         <div class="logo">
-            <img src="../Images/logoSinFondo.png" alt="LOGO">
+            <img src="./Images/logoSinFondo.png" alt="LOGO">
             <h1>SafeHolder</h1>
         </div>
         <div class="formulario">

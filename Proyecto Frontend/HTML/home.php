@@ -161,6 +161,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 // php de compra y venta
 
+
+// LO del tiempo
+$conn = new mysqli("192.168.232.100", "safeuser", "adie", "SafeHolder");
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$sql = "SELECT inactivitat FROM usuaris WHERE nom = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $usuario);
+$stmt->execute();
+$stmt->bind_result($inactivitat);
+$stmt->fetch();
+$stmt->close();
+$conn->close();
+
+if (!$inactivitat) {
+    $inactivitat = 10; 
+}
 ?>
 
 <!DOCTYPE html>
@@ -412,8 +431,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script>
       let timer;
-      const tempsInactivitat = 100000 * 1000; // 30 segundos para pruebas
-
+      const tempsInactivitat = <?php echo $_SESSION['inactivitat'] ?? 300; ?> * 1000;
+      
       function reiniciaTemporitzador() {
         clearTimeout(timer);
         timer = setTimeout(cierraSesion, tempsInactivitat);

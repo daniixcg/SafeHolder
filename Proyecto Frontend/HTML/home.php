@@ -169,6 +169,8 @@ if ($conn->connect_error) {
 }
 
 $sql = "SELECT inactivitat FROM usuaris WHERE nom = ?";
+$_SESSION['inactivitat'] = $inactivitat;
+$inactivitat = $_SESSION['inactivitat'] ?? null;
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $usuario);
 $stmt->execute();
@@ -178,7 +180,7 @@ $stmt->close();
 $conn->close();
 
 if (!$inactivitat) {
-    $inactivitat = 10; 
+  $inactivitat = 1;
 }
 ?>
 
@@ -431,7 +433,7 @@ if (!$inactivitat) {
 
     <script>
       let timer;
-      const tempsInactivitat = <?php echo $_SESSION['inactivitat'] ?? 300; ?> * 1000;
+      const tempsInactivitat = <?= $inactivitat ?> * 1;
       
       function reiniciaTemporitzador() {
         clearTimeout(timer);

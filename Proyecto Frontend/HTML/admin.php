@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
         echo "Per favor, completa tots els camps.";
     } else {
         $sql = "INSERT INTO usuaris (nom, cognoms, dni, telefon, gmail, contrasenya, dolars, rol, inactivitat, dataCreacio) 
-                VALUES ('$nom', '$cognoms', '$dni', '$telefon', '$gmail', '$contrasenya', 500, 1, 10, NOW())";
+                VALUES ('$nom', '$cognoms', '$dni', '$telefon', '$gmail', '$contrasenya', 500, 1, 1, NOW())";
         
         if ($conn->query($sql) === TRUE) {
 

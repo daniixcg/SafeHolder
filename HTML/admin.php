@@ -1,6 +1,6 @@
 <?php
 // Conexión a la base de datos
-$servername = "192.168.232.100";  // Dirección IP del servidor de base de datos
+$servername = "192.168.1.100";  // Dirección IP del servidor de base de datos
 $username = "safeuser";         // Usuario de la base de datos
 $password = "adie";             // Contraseña de la base de datos
 $dbname = "SafeHolder";         // Nombre de la base de datos
@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
         echo "Per favor, completa tots els camps.";
     } else {
         $sql = "INSERT INTO usuaris (nom, cognoms, dni, telefon, gmail, contrasenya, dolars, rol, inactivitat, dataCreacio) 
-                VALUES ('$nom', '$cognoms', '$dni', '$telefon', '$gmail', '$contrasenya', 500, 1, 1, NOW())";
+                VALUES ('$nom', '$cognoms', '$dni', '$telefon', '$gmail', '$contrasenya', 500, 1, 60, NOW())";
         
         if ($conn->query($sql) === TRUE) {
 

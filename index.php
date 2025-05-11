@@ -1,6 +1,6 @@
 <?php
 // Configuración de la base de datos
-$servername = "192.168.232.100";
+$servername = "192.168.1.100";
 $username = "safeuser";
 $password = "adie";
 $dbname = "SafeHolder";

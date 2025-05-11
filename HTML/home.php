@@ -11,7 +11,7 @@ $usuario = $_SESSION['usuario']; // Obtener el nombre de usuario de la sesión
 
 // --- SI ES UNA PETICIÓN AJAX DEVOLVEMOS LOS DATOS DE LOS ACTIVOS ---
 if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
-    $conn = new mysqli("192.168.232.100", "safeuser", "adie", "SafeHolder");
+    $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
     if ($conn->connect_error) {
         http_response_code(500);
         echo json_encode(["error" => "DB connection failed"]);
@@ -63,7 +63,7 @@ if (isset($_GET['grafico'])) {
             exit;
     }
 
-    $conn = new mysqli("192.168.232.100", "safeuser", "adie", "SafeHolder");
+    $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
     if ($conn->connect_error) {
         http_response_code(500);
         echo json_encode(["error" => "DB connection failed"]);
@@ -91,16 +91,16 @@ if (isset($_GET['grafico'])) {
 }
 
 // Si no es una petición AJAX, se continúa con la carga de la página normal
-$conn = new mysqli("192.168.232.100", "safeuser", "adie", "SafeHolder");
+$conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT dolars FROM usuaris WHERE nom = ?";
+$sql = "SELECT dolars, inactivitat FROM usuaris WHERE nom = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $usuario);
 $stmt->execute();
-$stmt->bind_result($dollars);
+$stmt->bind_result($dollars, $inactividad);
 $stmt->fetch();
 $stmt->close();
 $conn->close();
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        $conn = new mysqli("192.168.232.100", "safeuser", "adie", "SafeHolder");
+        $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
         if ($conn->connect_error) {
             http_response_code(500);
             echo json_encode(["success" => false, "message" => "Error de conexión a la base de datos."]);
@@ -159,29 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
-// php de compra y venta
 
-
-// LO del tiempo
-$conn = new mysqli("192.168.232.100", "safeuser", "adie", "SafeHolder");
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$sql = "SELECT inactivitat FROM usuaris WHERE nom = ?";
-$_SESSION['inactivitat'] = $inactivitat;
-$inactivitat = $_SESSION['inactivitat'] ?? null;
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $usuario);
-$stmt->execute();
-$stmt->bind_result($inactivitat);
-$stmt->fetch();
-$stmt->close();
-$conn->close();
-
-if (!$inactivitat) {
-  $inactivitat = 1;
-}
 ?>
 
 <!DOCTYPE html>
@@ -430,28 +408,7 @@ if (!$inactivitat) {
         });
       });
     </script>
-
-    <script>
-      let timer;
-      const tempsInactivitat = <?= $inactivitat ?> * 1;
-      
-      function reiniciaTemporitzador() {
-        clearTimeout(timer);
-        timer = setTimeout(cierraSesion, tempsInactivitat);
-      }
-
-      function cierraSesion() {
-        alert("Has estat desconnectat per inactivitat.");
-        window.location.href = "../index.php";
-      }
-
-      ["mousemove", "keydown", "click", "scroll"].forEach((event) => {
-        window.addEventListener(event, reiniciaTemporitzador);
-      });
-
-      reiniciaTemporitzador();
-    </script>
-    
+   
     <script>  // Funcion para el SWAP
       document.getElementById("swapForm").addEventListener("submit", async (e) => { e.preventDefault();
 
@@ -489,6 +446,26 @@ if (!$inactivitat) {
           console.error("Error en el swap:", err);
       }
       });
+    </script>
+    <script>
+        const tiempoInactividad = <?= (int)$inactividad ?> * 1000; // en milisegundos
+        let temporizadorInactividad;
+
+        function reiniciarTemporizador() {
+            clearTimeout(temporizadorInactividad);
+            temporizadorInactividad = setTimeout(() => {
+                alert("Has sido desconectado por inactividad.");
+                window.location.href = "./logout.php";
+            }, tiempoInactividad);
+        }
+
+        // Detectar actividad del usuario
+        ['mousemove', 'keydown', 'click', 'touchstart'].forEach(evento => {
+            document.addEventListener(evento, reiniciarTemporizador);
+        });
+
+        // Iniciar temporizador al cargar
+        window.onload = reiniciarTemporizador;
     </script>
   </body>
 </html>

@@ -26,16 +26,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
     if (empty($nom) || empty($cognoms) || empty($dni) || empty($telefon) || empty($gmail) || empty($contrasenya)) {
         echo "Per favor, completa tots els camps.";
     } else {
-        $sql = "INSERT INTO usuaris (nom, cognoms, dni, telefon, gmail, contrasenya, dolars, rol, inactivitat, dataCreacio) 
-                VALUES ('$nom', '$cognoms', '$dni', '$telefon', '$gmail', '$contrasenya', 500, 1, 60, NOW())";
-        
-        if ($conn->query($sql) === TRUE) {
+        // Transacción para seguridad
+        $conn->begin_transaction();
 
-        } else {
-            echo "Error: " . $sql . "<br>" . $conn->error;
+        try {
+            // Insertar usuario
+            $stmt = $conn->prepare("INSERT INTO usuaris (nom, cognoms, dni, telefon, gmail, contrasenya, dolars, rol, inactivitat, dataCreacio) 
+                                    VALUES (?, ?, ?, ?, ?, ?, 500, 1, 60, NOW())");
+            $stmt->bind_param("ssssss", $nom, $cognoms, $dni, $telefon, $gmail, $contrasenya);
+            $stmt->execute();
+            $idusuari = $conn->insert_id;
+
+            // Insertar portafoli
+            $stmt = $conn->prepare("INSERT INTO portafolis (idusuari) VALUES (?)");
+            $stmt->bind_param("i", $idusuari);
+            $stmt->execute();
+            $idportafoli = $conn->insert_id;
+
+            // Insertar portafolis_actius (3 activos)
+            $stmt = $conn->prepare("INSERT INTO portafolis_actius (idportafoli, idactiu, quantitat) VALUES (?, ?, 0)");
+            for ($idactiu = 1; $idactiu <= 3; $idactiu++) {
+                $stmt->bind_param("ii", $idportafoli, $idactiu);
+                $stmt->execute();
+            }
+
+            // Confirmar transacción
+            $conn->commit();
+            
+
+        } catch (Exception $e) {
+            // Si hay error, hacer rollback
+            $conn->rollback();
+            echo "Error: " . $e->getMessage();
         }
     }
 }
+
 
 // Verificar si el botón de eliminar ha sido presionado
 if (isset($_POST['eliminar'])) {

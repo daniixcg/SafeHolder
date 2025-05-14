@@ -26,7 +26,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } elseif (strpos($email, '@') === false) {
         $mensaje = "⚠️ El correo debe contener el símbolo @.";
     } else {
-        $stmt = $conn->prepare("SELECT nom FROM usuaris WHERE gmail = ? AND contrasenya = ?");
+        // Incluimos rol en la consulta
+        $stmt = $conn->prepare("SELECT nom, rol FROM usuaris WHERE gmail = ? AND contrasenya = ?");
         $stmt->bind_param("ss", $email, $contrasenya);
         $stmt->execute();
         $resultado = $stmt->get_result();
@@ -34,7 +35,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($resultado->num_rows === 1) {
             $fila = $resultado->fetch_assoc();
             $_SESSION['usuario'] = $fila['nom']; // Guardamos el nombre en la sesión
-            header("Location: ./HTML/home.php");
+
+            // Redirección según el rol
+            if ($fila['rol'] == 1) {
+                header("Location: ./HTML/home.php");
+            } elseif ($fila['rol'] == 0) {
+                header("Location: ./HTML/admin.php");
+            } else {
+                $mensaje = "❌ Rol desconocido.";
+            }
             exit();
         } else {
             $mensaje = "❌ Correo o contraseña incorrectos.";
@@ -43,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->close();
     }
 }
+
 
 $conn->close();
 ?>

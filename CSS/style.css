@@ -102,6 +102,17 @@ header div div h1{
     height: 50px;
 }*/
 /* GRAFICO*/
+.activo-box {
+  background: #222;
+  color: #fff;
+  padding: 1rem;
+  border-radius: 1rem;
+  font-family: monospace;
+  min-width: 150px;
+  text-align: center;
+  box-shadow: 0 0 5px #000;
+}
+
 .grafico{
     width: 1400px;
     height: 650px;

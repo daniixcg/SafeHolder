@@ -1,15 +1,26 @@
 <?php
-session_start(); // Iniciar la sesión
+session_start();
 
-// Verificar si el usuario está logeado
 if (!isset($_SESSION['usuario'])) {
-    header("Location: ../index.php"); // Redirigir al login si no está logeado
+    header("Location: ../index.php");
     exit;
 }
 
-$usuario = $_SESSION['usuario']; // Obtener el nombre de usuario de la sesión
+$usuario = $_SESSION['usuario'];
 
-// --- SI ES UNA PETICIÓN AJAX DEVOLVEMOS LOS DATOS DE LOS ACTIVOS ---
+// --- FUNCIÓN PARA REGISTRAR TRANSACCIÓN ---
+function registrarTransaccion($conn, $idportafoli, $idactiu, $tipo, $cantidad) {
+    // Asegura que el tipo esté en mayúsculas para coincidir con la base de datos
+    $tipo = strtoupper($tipo);
+    $sql = "INSERT INTO transaccions (idportafoli, idactiu, tipustransaccio, quantitat, datatransaccio)
+            VALUES (?, ?, ?, ?, NOW())";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iisd", $idportafoli, $idactiu, $tipo, $cantidad);
+    $stmt->execute();
+    $stmt->close();
+}
+
+// --- PETICIÓN AJAX para cargar activos y dólares ---
 if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
     if ($conn->connect_error) {
@@ -23,6 +34,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     $valores = [];
 
     while ($row = $result->fetch_assoc()) {
+        if (!isset($row["idactiu"]) || !isset($row["valor"])) continue;
         $valores[$row["idactiu"]] = $row["valor"];
     }
 
@@ -35,28 +47,56 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     $stmt->close();
 
     $conn->close();
-
     $valores['dollars'] = $dollars;
-
     echo json_encode($valores);
     exit;
 }
+// --- PETICIÓN AJAX PARA ACTIVOS DEL USUARIO (INCL. VALOR USD) ---
+if (isset($_GET['portafolis_actius']) && $_GET['portafolis_actius'] === '1') {
+    $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
+    if ($conn->connect_error) {
+        http_response_code(500);
+        echo json_encode(["error" => "DB connection failed"]);
+        exit;
+    }
 
-// --- PETICIÓN PARA DATOS DEL GRÁFICO POR ACTIVO ---
+    $stmt = $conn->prepare("SELECT u.idusuari, p.idportafoli FROM usuaris u JOIN portafolis p ON u.idusuari = p.idusuari WHERE u.nom = ?");
+    $stmt->bind_param("s", $usuario);
+    $stmt->execute();
+    $stmt->bind_result($idusuari, $idportafoli);
+    $stmt->fetch();
+    $stmt->close();
+
+    $sql = "SELECT a.nom, pa.quantitat, a.valor FROM portafolis_actius pa JOIN actius a ON pa.idactiu = a.idactiu WHERE pa.idportafoli = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $idportafoli);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $activos = [];
+    while ($row = $result->fetch_assoc()) {
+        $usd = $row['quantitat'] * $row['valor'];
+        $activos[] = [
+            "activo" => $row['nom'],
+            "cantidad" => $row['quantitat'],
+            "valor_usd" => round($usd, 2)
+        ];
+    }
+    $stmt->close();
+    $conn->close();
+
+    echo json_encode($activos);
+    exit;
+}
+// --- CARGAR DATOS PARA GRÁFICO DE ACTIVO ---
 if (isset($_GET['grafico'])) {
     $tipo = $_GET['grafico'];
     $tabla = "";
 
     switch ($tipo) {
-        case "bitcoin":
-            $tabla = "bitcoinHistoric";
-            break;
-        case "euro":
-            $tabla = "euroHistoric";
-            break;
-        case "oro":
-            $tabla = "orHistoric";
-            break;
+        case "bitcoin": $tabla = "bitcoinHistoric"; break;
+        case "euro": $tabla = "euroHistoric"; break;
+        case "oro": $tabla = "orHistoric"; break;
         default:
             http_response_code(400);
             echo json_encode(["error" => "Tipo de activo inválido"]);
@@ -82,7 +122,6 @@ if (isset($_GET['grafico'])) {
 
     $datos["labels"] = array_reverse($labels);
     $datos["data"] = array_reverse($data);
-
     $conn->close();
 
     header('Content-Type: application/json');
@@ -90,7 +129,7 @@ if (isset($_GET['grafico'])) {
     exit;
 }
 
-// Si no es una petición AJAX, se continúa con la carga de la página normal
+// --- DATOS PARA HEADER ---
 $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -105,62 +144,257 @@ $stmt->fetch();
 $stmt->close();
 $conn->close();
 
-// PHP para el SWAP
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents("php://input"), true);
+// --- PROCESAR COMPRA ---
 
-    if ($input['accion'] === 'swap') {
-        $activoOrigen = $input['activoOrigen'];
-        $activoDestino = $input['activoDestino'];
-        $cantidad = (int)$input['cantidad'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'comprar') {
+    header('Content-Type: application/json');
 
-        if ($cantidad <= 0) {
-            http_response_code(400);
-            echo json_encode(["success" => false, "message" => "Cantidad inválida."]);
-            exit;
-        }
+    $activo = $_POST['activo'] ?? '';
+    $cantidad = floatval($_POST['cantidad'] ?? 0);
+    $precio = floatval($_POST['precio'] ?? 0);
 
-        $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
-        if ($conn->connect_error) {
-            http_response_code(500);
-            echo json_encode(["success" => false, "message" => "Error de conexión a la base de datos."]);
-            exit;
-        }
+    if ($activo === 'oro') $activo = 'or';
 
-        // Verificar si el usuario tiene suficiente del activo de origen
-        $sql = "SELECT valor FROM actius WHERE idactiu = (SELECT id FROM actius WHERE nom = ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $activoOrigen);
-        $stmt->execute();
-        $stmt->bind_result($valorOrigen);
-        $stmt->fetch();
-        $stmt->close();
-
-        if ($valorOrigen < $cantidad) {
-            echo json_encode(["success" => false, "message" => "Saldo insuficiente en el activo de origen."]);
-            exit;
-        }
-
-        // Realizar el intercambio
-        $sql = "UPDATE actius SET valor = valor - ? WHERE idactiu = (SELECT id FROM actius WHERE nom = ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $cantidad, $activoOrigen);
-        $stmt->execute();
-
-        $sql = "UPDATE actius SET valor = valor + ? WHERE idactiu = (SELECT id FROM actius WHERE nom = ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $cantidad, $activoDestino);
-        $stmt->execute();
-
-        $stmt->close();
-        $conn->close();
-
-        echo json_encode(["success" => true]);
+    if (!$activo || $cantidad <= 0 || $precio <= 0) {
+        echo json_encode(["success" => false, "message" => "❌ Datos inválidos"]);
         exit;
     }
+
+    $totalUSD = $cantidad * $precio;
+
+    $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
+    if ($conn->connect_error) {
+        echo json_encode(["success" => false, "message" => "❌ Error de conexión"]);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT idusuari, dolars FROM usuaris WHERE nom = ?");
+    $stmt->bind_param("s", $usuario);
+    $stmt->execute();
+    $stmt->bind_result($idusuari, $saldo);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($saldo < $totalUSD) {
+        echo json_encode(["success" => false, "message" => "⚠️ No tienes suficiente saldo."]);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT idportafoli FROM portafolis WHERE idusuari = ?");
+    $stmt->bind_param("i", $idusuari);
+    $stmt->execute();
+    $stmt->bind_result($idportafoli);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT idactiu FROM actius WHERE nom = ?");
+    $stmt->bind_param("s", $activo);
+    $stmt->execute();
+    $stmt->bind_result($idactiu);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("UPDATE usuaris SET dolars = dolars - ? WHERE idusuari = ?");
+    $stmt->bind_param("di", $totalUSD, $idusuari);
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $conn->prepare("UPDATE portafolis_actius SET quantitat = quantitat + ? WHERE idportafoli = ? AND idactiu = ?");
+    $stmt->bind_param("dii", $cantidad, $idportafoli, $idactiu);
+    $stmt->execute();
+    $stmt->close();
+
+    // Registrar transacción de compra
+    registrarTransaccion($conn, $idportafoli, $idactiu, 'COMPRA', $cantidad);
+
+    $conn->close();
+
+    echo json_encode(["success" => true, "message" => "✅ Compra realizada correctamente."]);
+    exit;
+}
+
+// --- PROCESAR VENTA ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'vender') {
+    header('Content-Type: application/json');
+
+    $activo = $_POST['activo'] ?? '';
+    $cantidad = floatval($_POST['cantidad'] ?? 0);
+    $precio = floatval($_POST['precio'] ?? 0);
+
+    if ($activo === 'oro') $activo = 'or';
+
+    if (!$activo || $cantidad <= 0 || $precio <= 0) {
+        echo json_encode(["success" => false, "message" => "❌ Datos inválidos"]);
+        exit;
+    }
+
+    $totalUSD = $cantidad * $precio;
+
+    $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
+    if ($conn->connect_error) {
+        echo json_encode(["success" => false, "message" => "❌ Error de conexión"]);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT idusuari FROM usuaris WHERE nom = ?");
+    $stmt->bind_param("s", $usuario);
+    $stmt->execute();
+    $stmt->bind_result($idusuari);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT idportafoli FROM portafolis WHERE idusuari = ?");
+    $stmt->bind_param("i", $idusuari);
+    $stmt->execute();
+    $stmt->bind_result($idportafoli);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT idactiu FROM actius WHERE nom = ?");
+    $stmt->bind_param("s", $activo);
+    $stmt->execute();
+    $stmt->bind_result($idactiu);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT quantitat FROM portafolis_actius WHERE idportafoli = ? AND idactiu = ?");
+    $stmt->bind_param("ii", $idportafoli, $idactiu);
+    $stmt->execute();
+    $stmt->bind_result($cantidadDisponible);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($cantidadDisponible < $cantidad) {
+        echo json_encode(["success" => false, "message" => "⚠️ No tienes suficientes activos para vender."]);
+        $conn->close();
+        exit;
+    }
+
+    $stmt = $conn->prepare("UPDATE portafolis_actius SET quantitat = quantitat - ? WHERE idportafoli = ? AND idactiu = ?");
+    $stmt->bind_param("dii", $cantidad, $idportafoli, $idactiu);
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $conn->prepare("UPDATE usuaris SET dolars = dolars + ? WHERE idusuari = ?");
+    $stmt->bind_param("di", $totalUSD, $idusuari);
+    $stmt->execute();
+    $stmt->close();
+
+    // Registrar transacción de venta
+    registrarTransaccion($conn, $idportafoli, $idactiu, 'VENTA', $cantidad);
+
+    $conn->close();
+
+    echo json_encode(["success" => true, "message" => "✅ Venta realizada correctamente."]);
+    exit;
+}
+
+// --- PROCESAR SWAP ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'swap') {
+    header('Content-Type: application/json');
+
+    $activoOrigen = $_POST['activoOrigen'] ?? '';
+    $activoDestino = $_POST['activoDestino'] ?? '';
+    $cantidadOrigen = floatval($_POST['cantidadOrigen'] ?? 0);
+    $cantidadDestino = floatval($_POST['cantidadDestino'] ?? 0);
+
+    if ($activoOrigen === 'oro') $activoOrigen = 'or';
+    if ($activoDestino === 'oro') $activoDestino = 'or';
+
+    if (!$activoOrigen || !$activoDestino || $activoOrigen === $activoDestino ||
+        $cantidadOrigen <= 0 || $cantidadDestino <= 0) {
+        echo json_encode(["success" => false, "message" => "❌ Datos inválidos para swap."]);
+        exit;
+    }
+
+    $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
+    if ($conn->connect_error) {
+        echo json_encode(["success" => false, "message" => "❌ Error de conexión."]);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT idusuari FROM usuaris WHERE nom = ?");
+    $stmt->bind_param("s", $usuario);
+    $stmt->execute();
+    $stmt->bind_result($idusuari);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT idportafoli FROM portafolis WHERE idusuari = ?");
+    $stmt->bind_param("i", $idusuari);
+    $stmt->execute();
+    $stmt->bind_result($idportafoli);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT idactiu FROM actius WHERE nom = ?");
+    $stmt->bind_param("s", $activoOrigen);
+    $stmt->execute();
+    $stmt->bind_result($idOrigen);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conn->prepare("SELECT idactiu FROM actius WHERE nom = ?");
+    $stmt->bind_param("s", $activoDestino);
+    $stmt->execute();
+    $stmt->bind_result($idDestino);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Verificar que tiene suficiente cantidad del activo origen
+    $stmt = $conn->prepare("SELECT quantitat FROM portafolis_actius WHERE idportafoli = ? AND idactiu = ?");
+    $stmt->bind_param("ii", $idportafoli, $idOrigen);
+    $stmt->execute();
+    $stmt->bind_result($cantidadDisponible);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($cantidadDisponible < $cantidadOrigen) {
+        echo json_encode(["success" => false, "message" => "⚠️ No tienes suficiente cantidad de $activoOrigen."]);
+        $conn->close();
+        exit;
+    }
+
+    // Restar activo origen
+    $stmt = $conn->prepare("UPDATE portafolis_actius SET quantitat = quantitat - ? WHERE idportafoli = ? AND idactiu = ?");
+    $stmt->bind_param("dii", $cantidadOrigen, $idportafoli, $idOrigen);
+    $stmt->execute();
+    $stmt->close();
+
+    // Sumar activo destino (si existe lo actualiza, si no lo inserta)
+    $stmt = $conn->prepare("SELECT quantitat FROM portafolis_actius WHERE idportafoli = ? AND idactiu = ?");
+    $stmt->bind_param("ii", $idportafoli, $idDestino);
+    $stmt->execute();
+    $stmt->bind_result($cantidadActualDestino);
+    $existe = $stmt->fetch();
+    $stmt->close();
+
+    if ($existe) {
+        $stmt = $conn->prepare("UPDATE portafolis_actius SET quantitat = quantitat + ? WHERE idportafoli = ? AND idactiu = ?");
+        $stmt->bind_param("dii", $cantidadDestino, $idportafoli, $idDestino);
+        $stmt->execute();
+        $stmt->close();
+    } else {
+        $stmt = $conn->prepare("INSERT INTO portafolis_actius (idportafoli, idactiu, quantitat) VALUES (?, ?, ?)");
+        $stmt->bind_param("iid", $idportafoli, $idDestino, $cantidadDestino);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    // Registrar transacción de swap (resta origen)
+    registrarTransaccion($conn, $idportafoli, $idOrigen, 'SWAP_ORIGEN', $cantidadOrigen);
+    // Registrar transacción de swap (suma destino)
+    registrarTransaccion($conn, $idportafoli, $idDestino, 'SWAP_DESTINO', $cantidadDestino);
+
+    $conn->close();
+
+    echo json_encode(["success" => true, "message" => "✅ Swap realizado correctamente."]);
+    exit;
 }
 
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -213,7 +447,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
       </div>
     </header>
-
+    <div class="activos-usuario" style="display: flex; gap: 1rem; justify-content: center; margin: 1rem 0;">
+      <div id="box-bitcoin" class="activo-box">Cargando...</div>
+      <div id="box-or" class="activo-box">Cargando...</div>
+      <div id="box-euro" class="activo-box">Cargando...</div>
+    </div>
     <div class="grafico">
       <canvas id="performanceChart" width="400" height="200"></canvas>
     </div>
@@ -224,7 +462,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
       <div class="cantidad">
         <h3>Cantidad</h3>
-        <input type="number" id="cantidad" min="1" />
+        <input type="number" id="cantidad" />
       </div>
       <div class="venta">
         <button id="btnVender" class="BtnVenta">Vender</button>
@@ -269,7 +507,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
 
             <label for="cantidadSwap">Cantidad:</label>
-            <input type="number" id="cantidadSwap" name="cantidadSwap" min="1" required />
+            <input type="number" id="cantidadSwap" name="cantidadSwap"  required />
 
             <button type="submit" class="boton">Realizar Swap</button>
           </form>
@@ -317,83 +555,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script>
       let chart;
-      let activoActual = "bitcoin";
+      window.activoActual = "bitcoin";
+
 
       async function cargarGrafico(activo) {
-        try {
-            const res = await fetch("?grafico=" + activo);
-            const datos = await res.json();
-            const ctx = document
-                .getElementById("performanceChart")
-                .getContext("2d");
+    try {
+        const res = await fetch("?grafico=" + activo);
+        const datos = await res.json();
+        const ctx = document.getElementById("performanceChart").getContext("2d");
 
-            if (chart) {
-                chart.data.labels = datos.labels;
-                chart.data.datasets[0].data = datos.data;
-                chart.data.datasets[0].label = `Histórico de ${
-                  activo.charAt(0).toUpperCase() + activo.slice(1)
-                }`;
-                chart.update();
-            } else {
-                chart = new Chart(ctx, {
-                    type: "line",
-                    data: {
-                        labels: datos.labels,
-                        datasets: [
-                            {
-                                label: `Histórico de ${
-                                  activo.charAt(0).toUpperCase() + activo.slice(1)
-                                }`,
-                                data: datos.data,
-                                backgroundColor: "rgba(75, 192, 192, 0.2)",
-                                borderColor: "rgba(75, 192, 192, 1)",
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.3,
-                            },
-                        ],
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: "Gráfico Histórico",
-                                color: "white", // Título en blanco
-                            },
-                            legend: {
-                                labels: {
-                                    color: "white", // Leyenda en blanco
-                                },
-                            },
+        if (chart) {
+            chart.data.labels = datos.labels;
+            chart.data.datasets[0].data = datos.data;
+            chart.data.datasets[0].label = `Histórico de ${activo.charAt(0).toUpperCase() + activo.slice(1)}`;
+            chart.update();
+        } else {
+            chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: datos.labels,
+                    datasets: [{
+                        label: `Histórico de ${activo.charAt(0).toUpperCase() + activo.slice(1)}`,
+                        data: datos.data,
+                        backgroundColor: "rgba(75, 192, 192, 0.2)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Gráfico Histórico",
+                            color: "white",
                         },
-                        scales: {
-                            x: {
-                                ticks: {
-                                    color: "white", // Etiquetas del eje X en blanco
-                                },
-                                grid: {
-                                    color: "rgba(255, 255, 255, 0.2)", // Líneas de la cuadrícula en blanco semitransparente
-                                },
-                            },
-                            y: {
-                                ticks: {
-                                    color: "white", // Etiquetas del eje Y en blanco
-                                },
-                                grid: {
-                                    color: "rgba(255, 255, 255, 0.2)", // Líneas de la cuadrícula en blanco semitransparente
-                                },
+                        legend: {
+                            labels: {
+                                color: "white",
                             },
                         },
                     },
-                });
-            }
-
-            activoActual = activo;
-        } catch (err) {
-            console.error("Error al cargar gráfico:", err);
+                    scales: {
+                        x: {
+                            ticks: { color: "white" },
+                            grid: { color: "rgba(255,255,255,0.2)" },
+                        },
+                        y: {
+                            ticks: { color: "white" },
+                            grid: { color: "rgba(255,255,255,0.2)" },
+                        },
+                    },
+                },
+            });
         }
-      }
+
+        window.activoActual = activo; // ← 🔥 Este es el cambio clave
+    } catch (err) {
+        console.error("Error al cargar gráfico:", err);
+    }
+}
+
 
       // Inicia con Bitcoin
       cargarGrafico("bitcoin");
@@ -408,45 +632,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
       });
     </script>
-   
-    <script>  // Funcion para el SWAP
-      document.getElementById("swapForm").addEventListener("submit", async (e) => { e.preventDefault();
+    <script>
+        document.getElementById("swapForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
 
-      const activoOrigen = document.getElementById("activoOrigen").value;
-      const activoDestino = document.getElementById("activoDestino").value;
-      const cantidad = document.getElementById("cantidadSwap").value;
+          const activoOrigen = document.getElementById("activoOrigen").value;
+          const activoDestino = document.getElementById("activoDestino").value;
+          const cantidadOrigen = parseFloat(document.getElementById("cantidadSwap").value);
 
-      if (activoOrigen === activoDestino) {
-          alert("El activo de origen y destino no pueden ser iguales.");
-          return;
-      }
-
-      try {
-          const res = await fetch("home.php", {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                  accion: "swap",
-                  activoOrigen: activoOrigen,
-                  activoDestino: activoDestino,
-                  cantidad: cantidad,
-              }),
-          });
-
-          const data = await res.json();
-          if (data.success) {
-              alert("Swap realizado con éxito.");
-              location.reload(); // Recarga la página para actualizar los datos
-          } else {
-              alert("Error al realizar el swap: " + data.message);
+          if (activoOrigen === activoDestino) {
+            alert("⚠️ El activo de origen y destino no pueden ser iguales.");
+            return;
           }
-      } catch (err) {
-          console.error("Error en el swap:", err);
-      }
-      });
-    </script>
+
+          if (!cantidadOrigen || cantidadOrigen <= 0) {
+            alert("⚠️ Ingresa una cantidad válida para intercambiar.");
+            return;
+          }
+
+          try {
+            // Obtener precios en tiempo real
+            const res = await fetch("?ajax=1");
+            const precios = await res.json();
+
+            const nombres = { bitcoin: 1, oro: 2, euro: 3 };
+            const mapNombreBD = { oro: "or", bitcoin: "bitcoin", euro: "euro" };
+
+            const precioOrigen = precios[nombres[activoOrigen]];
+            const precioDestino = precios[nombres[activoDestino]];
+
+            if (!precioOrigen || !precioDestino) {
+              alert("❌ Error al obtener precios actuales.");
+              return;
+            }
+
+            const valorUSD = cantidadOrigen * precioOrigen;
+            const cantidadDestino = valorUSD / precioDestino;
+
+            const formData = new FormData();
+            formData.append("accion", "swap");
+            formData.append("activoOrigen", mapNombreBD[activoOrigen]);
+            formData.append("activoDestino", mapNombreBD[activoDestino]);
+            formData.append("cantidadOrigen", cantidadOrigen);
+            formData.append("cantidadDestino", cantidadDestino);
+
+            const resSwap = await fetch("home.php", {
+              method: "POST",
+              body: formData
+            });
+
+            const data = await resSwap.json();
+            if (data.success) {
+              alert("✅ Swap realizado con éxito.");
+              location.reload();
+            } else {
+              alert("⛔ " + data.message);
+            }
+
+          } catch (err) {
+            console.error("❌ Error en el swap:", err);
+            alert("❌ Hubo un error realizando el swap.");
+          }
+        });
+  </script>
+
+    
     <script>
         const tiempoInactividad = <?= (int)$inactividad ?> * 1000; // en milisegundos
         let temporizadorInactividad;
@@ -467,5 +717,146 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Iniciar temporizador al cargar
         window.onload = reiniciarTemporizador;
     </script>
+    <script>
+window.onload = function () {
+  document.getElementById("btnComprar").addEventListener("click", async () => {
+    const cantidadInput = document.getElementById("cantidad");
+    const cantidad = parseFloat(cantidadInput.value);
+    const activo = window.activoActual;
+    const valorDiv = document.getElementById(`valor-${activo}`);
+    const precio = parseFloat(valorDiv?.textContent.replace("$", "").trim());
+
+    console.log("🧪 EVENTO ACTIVADO:", {
+      activo,
+      cantidadInput: cantidadInput.value,
+      cantidad,
+      precio
+    });
+
+    if (!cantidad || cantidad <= 0) {
+      alert("⚠️ Ingresa una cantidad válida.");
+      return;
+    }
+
+    if (!precio || isNaN(precio)) {
+      alert("❌ Precio inválido.");
+      return;
+    }
+
+    const total = cantidad * precio;
+    if (anterior.dollars < total) {
+      alert(`⚠️ Saldo insuficiente. Necesitas $${total.toFixed(2)} USD`);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("accion", "comprar");
+    formData.append("activo", activo);
+    formData.append("cantidad", cantidad);
+    formData.append("precio", precio);
+
+    try {
+      const res = await fetch("home.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const text = await res.text();
+      console.log("🧪 RAW RESPONSE:", text);
+
+      const data = JSON.parse(text);
+      if (data.success) {
+        alert("✅ Compra realizada correctamente.");
+        location.reload();
+      } else {
+        alert("⛔ " + data.message);
+      }
+    } catch (err) {
+      console.error("❌ Error JS", err);
+      alert("❌ Error inesperado al realizar la compra.");
+    }
+  });
+};
+</script>
+
+<script>
+document.getElementById("btnVender").addEventListener("click", async () => {
+  const cantidadInput = document.getElementById("cantidad");
+  const cantidad = parseFloat(cantidadInput.value);
+  const activo = window.activoActual;
+  const valorDiv = document.getElementById(`valor-${activo}`);
+  const precio = parseFloat(valorDiv?.textContent.replace("$", "").trim());
+
+  if (!cantidad || cantidad <= 0) {
+    alert("⚠️ Ingresa una cantidad válida.");
+    return;
+  }
+
+  if (!precio || isNaN(precio)) {
+    alert("❌ Precio inválido.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("accion", "vender");
+  formData.append("activo", activo);
+  formData.append("cantidad", cantidad);
+  formData.append("precio", precio);
+
+  try {
+    const res = await fetch("home.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const text = await res.text();
+    console.log("🧪 RAW RESPONSE (venta):", text);
+
+    const data = JSON.parse(text);
+    if (data.success) {
+      alert("✅ Venta realizada correctamente.");
+      location.reload();
+    } else {
+      alert("⛔ " + data.message);
+    }
+  } catch (err) {
+    console.error("❌ Error en la venta:", err);
+    alert("❌ Error inesperado al realizar la venta.");
+  }
+});
+</script>
+<script>
+async function cargarActivosUsuario() {
+  try {
+    const res = await fetch("home.php?portafolio_activos=1");
+    const data = await res.json();
+
+    const boxes = {
+      bitcoin: document.getElementById("box-bitcoin"),
+      or: document.getElementById("box-or"),
+      euro: document.getElementById("box-euro")
+    };
+
+    for (const box of Object.values(boxes)) {
+      if (box) box.textContent = "No disponible";
+    }
+
+    data.forEach(activo => {
+      const id = `box-${activo.activo}`;
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = `${activo.activo.toUpperCase()}: ${activo.cantidad} ≈ $${activo.valor_usd}`;
+      }
+    });
+  } catch (err) {
+    console.error("Error al cargar activos usuario:", err);
+  }
+}
+
+cargarActivosUsuario();
+setInterval(cargarActivosUsuario, 5000); // actualiza cada 5s
+</script>
+
+
   </body>
 </html>

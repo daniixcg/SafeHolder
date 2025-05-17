@@ -26,8 +26,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } elseif (strpos($email, '@') === false) {
         $mensaje = "⚠️ El correo debe contener el símbolo @.";
     } else {
-        // Incluimos rol en la consulta
-        $stmt = $conn->prepare("SELECT nom, rol FROM usuaris WHERE gmail = ? AND contrasenya = ?");
+        // Incluimos rol y operatiu en la consulta
+        $stmt = $conn->prepare("SELECT nom, rol FROM usuaris WHERE gmail = ? AND contrasenya = ? AND operatiu = 1");
         $stmt->bind_param("ss", $email, $contrasenya);
         $stmt->execute();
         $resultado = $stmt->get_result();
@@ -46,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
             exit();
         } else {
-            $mensaje = "❌ Correo o contraseña incorrectos.";
+            $mensaje = "❌ Correo, contraseña incorrectos o cuenta desactivada.";
         }
 
         $stmt->close();

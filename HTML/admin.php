@@ -31,8 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
 
         try {
             // Insertar usuario
-            $stmt = $conn->prepare("INSERT INTO usuaris (nom, cognoms, dni, telefon, gmail, contrasenya, dolars, rol, inactivitat, dataCreacio) 
-                                    VALUES (?, ?, ?, ?, ?, ?, 500, 1, 60, NOW())");
+            $stmt = $conn->prepare("INSERT INTO usuaris (nom, cognoms, dni, telefon, gmail, contrasenya, dolars, rol, inactivitat, operatiu, dataCreacio) 
+                                    VALUES (?, ?, ?, ?, ?, ?, 500, 1, 60, 1, NOW())");
             $stmt->bind_param("ssssss", $nom, $cognoms, $dni, $telefon, $gmail, $contrasenya);
             $stmt->execute();
             $idusuari = $conn->insert_id;
@@ -152,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
                 </tr>
                 <?php
                 // Consulta para obtener los usuarios
-                $sql = "SELECT idusuari, nom, cognoms, dni, telefon, gmail , contrasenya FROM usuaris";
+                $sql = "SELECT idusuari, nom, cognoms, dni, telefon, gmail , contrasenya FROM usuaris WHERE rol = 1";
                 $result = $conn->query($sql);
 
                 if ($result->num_rows > 0) {

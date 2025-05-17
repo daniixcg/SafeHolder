@@ -61,6 +61,22 @@ if ($stmt->fetch()) {
 }
 
 $stmt->close();
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_compte'])) {
+    $consulta = "UPDATE usuaris SET operatiu = 0, dataEliminacio = NOW() WHERE nom = ?";
+    $stmt = $mysqli->prepare($consulta);
+    $stmt->bind_param("s", $nom_usuari);
+
+    if ($stmt->execute()) {
+        // Cerrar sesión y redirigir al login
+        session_destroy();
+        header("Location: ../index.php");
+        exit;
+    } else {
+        $errorEliminar = "Error al eliminar el compte.";
+    }
+    $stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -170,17 +186,76 @@ $stmt->close();
             />
 
             <button type="submit">Desar canvis</button>
+            <button type="submit" name="eliminar_compte" style="background-color:#d32f2f;color:white;margin-top:10px;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;">
+                Eliminar compte
+            </button>
+            <?php if (isset($errorEliminar)) { echo '<p style="color:red;">'.$errorEliminar.'</p>'; } ?>
         </form>
       </div>
 
       <div class="contenedor-transacciones">
         <h2>Historial de Transaccions</h2>
         <ul>
-          <li>Compra 1: Bitcoin - $500</li>
-          <li>Compra 2: Oro - $300</li>
-          <li>Compra 3: Euro - $200</li>
+        <?php
+        // Obtener el idusuari del usuario logueado
+        $consultaUsuari = "SELECT idusuari FROM usuaris WHERE nom = ?";
+        $stmtUsuari = $mysqli->prepare($consultaUsuari);
+        $stmtUsuari->bind_param("s", $nom_usuari);
+        $stmtUsuari->execute();
+        $stmtUsuari->bind_result($idusuari);
+        $stmtUsuari->fetch();
+        $stmtUsuari->close();
+
+        // Obtener el idportafoli del usuario
+        $consultaPortafoli = "SELECT idportafoli FROM portafolis WHERE idusuari = ?";
+        $stmtPortafoli = $mysqli->prepare($consultaPortafoli);
+        $stmtPortafoli->bind_param("i", $idusuari);
+        $stmtPortafoli->execute();
+        $stmtPortafoli->bind_result($idportafoli);
+        $stmtPortafoli->fetch();
+        $stmtPortafoli->close();
+
+        // Obtener las transacciones del portafolio
+        $consultaTrans = "SELECT t.idtransaccio, t.tipustransaccio, t.quantitat, t.datatransaccio, a.nom as nom_actiu
+                          FROM transaccions t
+                          JOIN actius a ON t.idactiu = a.idactiu
+                          WHERE t.idportafoli = ?
+                          ORDER BY t.datatransaccio DESC";
+        $stmtTrans = $mysqli->prepare($consultaTrans);
+        $stmtTrans->bind_param("i", $idportafoli);
+        $stmtTrans->execute();
+        $resultTrans = $stmtTrans->get_result();
+
+        if ($resultTrans->num_rows > 0) {
+            while ($row = $resultTrans->fetch_assoc()) {
+                echo "<li>";
+                echo "<strong>{$row['tipustransaccio']}</strong> - ";
+                echo "{$row['quantitat']} {$row['nom_actiu']} ";
+                echo "<span style='color: #888;'>(" . date('d/m/Y H:i', strtotime($row['datatransaccio'])) . ")</span>";
+                echo " <span style='font-size:0.9em;color:#bbb;'>#{$row['idtransaccio']}</span>";
+                echo "</li>";
+            }
+        } else {
+            echo "<li>No hi ha transaccions.</li>";
+        }
+        $stmtTrans->close();
+        ?>
         </ul>
       </div>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const eliminarBtn = document.querySelector('button[name="eliminar_compte"]');
+        if (eliminarBtn) {
+            eliminarBtn.addEventListener('click', function(e) {
+                const confirmado = confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.');
+                if (!confirmado) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+    </script>
   </body>
 </html>

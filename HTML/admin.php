@@ -129,7 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
         <div class="titulo"><h1>SafeHolder</h1></div>
         <div class="LoginCartera">
             <div class="valorCartera">
-                <a href="../HTML/auditoria-transaccions.html">
+                <a href="../HTML/auditories.php">
                     <img src="../Images/auditoria.png" alt="VALOR CARTERA" />
                 </a>
             </div>

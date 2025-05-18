@@ -129,10 +129,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
         <div class="titulo"><h1>SafeHolder</h1></div>
         <div class="LoginCartera">
             <div class="valorCartera">
-                <img src="../Images/valorCartera.png" alt="VALOR CARTERA">
+                <a href="../HTML/auditoria-transaccions.html">
+                    <img src="../Images/auditoria.png" alt="VALOR CARTERA" />
+                </a>
             </div>
             <div class="cuenta">
-                <a href="../HTML/login.html"><img src="../Images/cuenta.png" alt="CUENTA"></a>
+                <a href="../index.php">
+                    <img src="../Images/salida.png" alt="VALOR CARTERA" />
+                </a>
             </div>
         </div>
     </header>
@@ -208,10 +212,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
             </div>
         </div>
 
-        <!-- BOTON AGREGAR USUARIO -->
-        <button class="agregarUsuario" onclick="document.getElementById('sidebar2').style.display='block'">
-            <span>Afegeix Nou Usuari</span>
-        </button>
+            <!-- BOTON AGREGAR USUARIO -->
+            <button class="agregarUsuario" onclick="document.getElementById('sidebar2').style.display='block'">
+                <span>Afegeix Nou Usuari</span>
+            </button>
+
 
         <!-- Sidebar para agregar usuario -->
         <div class="sidebar2" id="sidebar2" style="display: none;">

@@ -1,0 +1,285 @@
+
+body{
+    margin: 0px;
+    font-family: 'Tektur', sans-serif;
+    background-color: #555555;
+    overflow: hidden;
+    height: 100%;
+}
+.container{
+    width: 100%;
+    margin: 0 auto;
+}
+
+/*ESTA ES TODA LA PARTE DEL HEADER */
+.headerContainer{
+    width: 100%;
+    height: 80px;
+}
+header{
+    width: 100%;
+    height: 80px;
+    background-color: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+header div img{
+    width: 80px;
+    height: 80px;
+    margin: 10px 10px 10px 20px;
+}
+/*TITULO Y SUBTITULO */
+.titulo{
+    float: left;
+    width: 500px;
+    height: 50px;
+    margin: 10px 10px 40px 0px;
+
+}
+
+header div div h1{
+    size: 100px;
+}
+
+/*CUENTA*/
+.LoginCartera{
+    width: 120px; 
+    height: 80px;
+    color: white; 
+    display: flex;
+    align-items: center;
+    padding: 0 20px; 
+    margin-left: auto;
+    gap: 20px;
+}
+.cuenta, .valorCartera{
+    margin-top: 1px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center; 
+    align-items: center;  
+}
+
+.cuenta img, .valorCartera img{
+    width: 50px;
+    height: 50px;
+}
+
+/*USUARIOS*/
+
+.usuarios{
+    width: auto; 
+    height: 700px; 
+    background-color: #333;
+    border-radius: 20px;
+    margin: 20px; /* Espaciado alrededor */
+    margin-left: 13%;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    overflow-y: auto; 
+    outline: none; /* Elimina el contorno azul predeterminado */    
+    float: left;
+    
+}
+
+.usuarios h1{
+    color: white;
+    text-align: center;
+    margin: 10px auto;
+}
+
+.usuarios-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    color: white;
+}
+
+.usuarios-tabla th, .usuarios-tabla td {
+    padding: 10px;
+    border-bottom: 1px solid white;
+}
+
+
+/*BOTON DESPLEGABLE*/ 
+/* From Uiverse.io by NorthFishHasNa */ 
+button {
+    display: inline-block;
+    border-radius: 4px;
+    background-color: #3d405b;
+    border: none;
+    color: #FFFFFF;
+    text-align: center;
+    font-size: 17px;
+    padding: 16px;
+    width: 130px;
+    transition: all 0.5s;
+    cursor: pointer;
+    margin: 5px;
+   }
+   
+   button span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+   }
+   
+   button span:after {
+    content: '»';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -15px;
+    transition: 0.5s;
+   }
+   
+   button:hover span {
+    padding-right: 15px;
+   }
+   
+   button:hover span:after {
+    opacity: 1;
+    right: 0;
+   }
+
+/*BOTON DESPLEGABLE EDITAR*/
+.sidebar {
+    position: fixed;
+    top: 55%; 
+    left: 50%;
+    margin-left: 23%;
+    transform: translate(-50%, -50%);
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px; /* Ancho fijo del sidebar */
+    height: auto; /* Ajusta la altura automáticamente según el contenido */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: none; /* Oculto por defecto */
+    z-index: 1000;
+    font-family: 'Tektur', sans-serif;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #ffffff;
+}
+
+.sidebar form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sidebar input, 
+.sidebar select,
+.sidebar button {
+    padding: 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    width: 95%;
+}
+
+.sidebar button {
+    background-color: #388E3C;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar button:hover {
+    background-color: #2E7D32;
+}
+
+.sidebar button#cerrarSidebar {
+    background-color: #ff4d4d;
+}
+
+.sidebar button#cerrarSidebar:hover {
+    background-color: #cc0000;
+}
+
+/*Añadir usuario*/
+.agregarUsuario {
+    display: block; /* Asegura que el botón ocupe toda la línea */
+    margin-left: 30%; /* Centra el botón horizontalmente y añade un margen superior */
+    border-radius: 4px;
+    background-color: #3d405b;
+    border: none;
+    color: #FFFFFF;
+    text-align: center;
+    font-size: 17px;
+    padding: 16px;
+    width: auto; 
+    transition: all 0.5s;
+    cursor: pointer;
+    clear: both; /* Coloca el botón debajo de los elementos flotantes */
+    float: left;
+}
+
+.agregarUsuario:hover {
+    background-color: #2c2f47; /* Cambia el color al pasar el cursor */
+}
+
+/*BOTON DESPLEGABLE AÑADIR USUARIO*/
+.sidebar2 {
+    position: fixed;
+    top: 52%; 
+    left: 50%;
+    margin-left: 23%;
+    transform: translate(-50%, -50%);
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px; /* Ancho fijo del sidebar */
+    height: auto; /* Ajusta la altura automáticamente según el contenido */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: none; /* Oculto por defecto */
+    z-index: 1000;
+  }
+  
+  .sidebar2 h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .sidebar2 form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .sidebar2 input, 
+  .sidebar2 select,
+  .sidebar2 button {
+    padding: 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    width: 95%; /* Ocupa todo el ancho del contenedor */
+}
+.sidebar2 button {
+    background-color: #388E3C; /* Verde oscuro */
+    color: white; /* Texto blanco */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar2 button:hover {
+    background-color: #2E7D32; /* Verde aún más oscuro al pasar el cursor */
+}
+
+    .sidebar2 button#cerrarModal {
+    background-color: #ff4d4d; /* Fondo rojo para el botón de cerrar */
+    }
+
+    .sidebar2 button#cerrarModal:hover {
+    background-color: #cc0000; /* Fondo rojo más oscuro al pasar el cursor */
+    }

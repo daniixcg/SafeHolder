@@ -1,0 +1,127 @@
+body{
+    margin: 0px;
+    font-family: 'Tektur', sans-serif;
+    background-color: #555555;
+    overflow: hidden;
+    height: 100%;
+}
+
+/*ESTA ES TODA LA PARTE DEL HEADER */
+.headerContainer{
+    width: 100%;
+    height: 80px;
+}
+header{
+    width: 100%;
+    height: 80px;
+    background-color: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+header div img{
+    width: 80px;
+    height: 80px;
+    margin: 10px 10px 10px 20px;
+}
+
+/*TITULO Y SUBTITULO */
+.titulo{
+    float: left;
+    width: 500px;
+    height: 50px;
+    margin: 10px 10px 40px 0px;
+
+}
+
+header div div h1{
+    size: 100px;
+}
+
+/*CUENTA*/
+.LoginCartera{
+    width: 120px; 
+    height: 80px;
+    color: white; 
+    display: flex;
+    align-items: center;
+    padding: 0 20px; 
+    margin-left: auto;
+    gap: 20px;
+}
+.cuenta, .valorCartera{
+    margin-top: 1px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center; 
+    align-items: center;  
+}
+
+.cuenta img, .valorCartera img{
+    width: 50px;
+    height: 50px;
+}
+
+/* TABLAS EDITAR*/
+.contenedor-principal {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin: 100px ;
+    gap: 20px;
+}
+
+.contenedor-editar, .contenedor-transacciones {
+    flex: 1;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.contenedor-editar h2, .contenedor-transacciones h2 {
+    text-align: center;
+    font-family: 'Tektur', sans-serif;
+}
+
+.contenedor-editar form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contenedor-editar label {
+    font-weight: bold;
+}
+
+.contenedor-editar input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.contenedor-editar button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.contenedor-editar button:hover {
+    background-color: #45a049;
+}
+
+.contenedor-transacciones ul {
+    list-style: none;
+    padding: 0;
+}
+
+.contenedor-transacciones li {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}

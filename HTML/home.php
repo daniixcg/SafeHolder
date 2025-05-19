@@ -130,17 +130,52 @@ if (isset($_GET['grafico'])) {
 }
 
 // --- DATOS PARA HEADER ---
+// --- DATOS PARA HEADER (saldo + activos bitcoin, euro, oro) ---
 $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT dolars, inactivitat FROM usuaris WHERE nom = ?";
+// Obtener saldo y inactividad
+$sql = "SELECT dolars, inactivitat, idusuari FROM usuaris WHERE nom = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $usuario);
 $stmt->execute();
-$stmt->bind_result($dollars, $inactividad);
+$stmt->bind_result($dollars, $inactividad, $idusuari);
 $stmt->fetch();
+$stmt->close();
+
+// Obtener idportafoli asociado
+$sql = "SELECT idportafoli FROM portafolis WHERE idusuari = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $idusuari);
+$stmt->execute();
+$stmt->bind_result($idportafoli);
+$stmt->fetch();
+$stmt->close();
+
+// Obtener cantidades de activos bitcoin, euro y oro para ese portafolio
+// Nota: en la base de datos los activos pueden tener nombres 'bitcoin', 'euro', 'or' (oro)
+$sql = "SELECT a.nom, pa.quantitat FROM portafolis_actius pa 
+        JOIN actius a ON pa.idactiu = a.idactiu 
+        WHERE pa.idportafoli = ? AND a.nom IN ('bitcoin', 'euro', 'or')";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $idportafoli);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$activosHeader = [
+    "bitcoin" => 0,
+    "euro" => 0,
+    "oro" => 0
+];
+
+while ($row = $result->fetch_assoc()) {
+    // Ajustar 'or' a 'oro' para el array
+    $nombre = $row['nom'] === 'or' ? 'oro' : $row['nom'];
+    $activosHeader[$nombre] = $row['quantitat'];
+}
+
 $stmt->close();
 $conn->close();
 
@@ -447,11 +482,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         </div>
       </div>
     </header>
-    <div class="activos-usuario" style="display: flex; gap: 1rem; justify-content: center; margin: 1rem 0;">
-      <div id="box-bitcoin" class="activo-box">Cargando...</div>
-      <div id="box-or" class="activo-box">Cargando...</div>
-      <div id="box-euro" class="activo-box">Cargando...</div>
-    </div>
+    <div class="activosHeader">
+      <p>Bitcoin: <?php echo number_format($activosHeader['bitcoin'], 4); ?> BTC</p>
+      <p>Euro: <?php echo number_format($activosHeader['euro'], 2); ?> EUR</p>
+      <p>Oro: <?php echo number_format($activosHeader['oro'], 4); ?> oz</p>
+  </div>
     <div class="grafico">
       <canvas id="performanceChart" width="400" height="200"></canvas>
     </div>

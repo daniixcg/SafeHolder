@@ -67,27 +67,77 @@ if (isset($_GET['portafolis_actius']) && $_GET['portafolis_actius'] === '1') {
     $stmt->fetch();
     $stmt->close();
 
-    $sql = "SELECT a.nom, pa.quantitat, a.valor FROM portafolis_actius pa JOIN actius a ON pa.idactiu = a.idactiu WHERE pa.idportafoli = ?";
+    // Usa mayúsculas aquí
+    $activos_posibles = ['BITCOIN', 'OR', 'EURO'];
+    $valores = [];
+    $sql = "SELECT nom, valor FROM actius WHERE nom IN ('BITCOIN', 'OR', 'EURO')";
+    $result = $conn->query($sql);
+    while ($row = $result->fetch_assoc()) {
+        $valores[$row['nom']] = $row['valor'];
+    }
+
+    // Inicializar todos los activos con cantidad 0
+    $activos = [];
+    foreach ($activos_posibles as $nombre) {
+        $activos[$nombre] = [
+            "activo" => strtolower($nombre), // para el frontend
+            "cantidad" => 0,
+            "valor_usd" => 0
+        ];
+    }
+
+    // Obtener los activos reales del usuario
+    $sql = "SELECT a.nom, pa.quantitat FROM portafolis_actius pa JOIN actius a ON pa.idactiu = a.idactiu WHERE pa.idportafoli = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $idportafoli);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    $activos = [];
     while ($row = $result->fetch_assoc()) {
-        $usd = $row['quantitat'] * $row['valor'];
-        $activos[] = [
-            "activo" => $row['nom'],
-            "cantidad" => $row['quantitat'],
-            "valor_usd" => round($usd, 2)
-        ];
+        $nombre = $row['nom'];
+        if (isset($activos[$nombre])) {
+            $activos[$nombre]['cantidad'] = $row['quantitat'];
+            $activos[$nombre]['valor_usd'] = round($row['quantitat'] * ($valores[$nombre] ?? 0), 2);
+        }
     }
     $stmt->close();
     $conn->close();
 
-    echo json_encode($activos);
+    // Devolver como array indexado
+    echo json_encode(array_values($activos));
     exit;
 }
+
+// --- CALCULAR VALOR TOTAL DE LA CARTERA ---
+$conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
+if ($conn->connect_error) {
+    $valorCartera = 0;
+} else {
+    $stmt = $conn->prepare("SELECT u.idusuari, p.idportafoli, u.dolars
+                            FROM usuaris u
+                            JOIN portafolis p ON u.idusuari = p.idusuari
+                            WHERE u.nom = ?");
+    $stmt->bind_param("s", $usuario);
+    $stmt->execute();
+    $stmt->bind_result($idusuari, $idportafoli, $dollars);
+    $stmt->fetch();
+    $stmt->close();
+
+    $totalActivos = 0;
+    $sql = "SELECT pa.quantitat, a.valor FROM portafolis_actius pa JOIN actius a ON pa.idactiu = a.idactiu WHERE pa.idportafoli = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $idportafoli);
+    $stmt->execute();
+    $stmt->bind_result($cantidad, $valor);
+    while ($stmt->fetch()) {
+        $totalActivos += $cantidad * $valor;
+    }
+    $stmt->close();
+    $conn->close();
+
+    $valorCartera = $dollars + $totalActivos;
+}
+
 // --- CARGAR DATOS PARA GRÁFICO DE ACTIVO ---
 if (isset($_GET['grafico'])) {
     $tipo = $_GET['grafico'];
@@ -129,55 +179,42 @@ if (isset($_GET['grafico'])) {
     exit;
 }
 
-// --- DATOS PARA HEADER ---
-// --- DATOS PARA HEADER (saldo + activos bitcoin, euro, oro) ---
+// --- DATOS PARA HEADER (valor total de cartera del usuario) ---
 $conn = new mysqli("192.168.1.100", "safeuser", "adie", "SafeHolder");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Obtener saldo y inactividad
-$sql = "SELECT dolars, inactivitat, idusuari FROM usuaris WHERE nom = ?";
-$stmt = $conn->prepare($sql);
+// Obtener idusuari y idportafoli del usuario logueado
+$stmt = $conn->prepare("SELECT u.idusuari, p.idportafoli, u.dolars, u.inactivitat 
+                        FROM usuaris u 
+                        JOIN portafolis p ON u.idusuari = p.idusuari 
+                        WHERE u.nom = ?");
 $stmt->bind_param("s", $usuario);
 $stmt->execute();
-$stmt->bind_result($dollars, $inactividad, $idusuari);
+$stmt->bind_result($idusuari, $idportafoli, $dollars, $inactividad);
 $stmt->fetch();
 $stmt->close();
 
-// Obtener idportafoli asociado
-$sql = "SELECT idportafoli FROM portafolis WHERE idusuari = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $idusuari);
-$stmt->execute();
-$stmt->bind_result($idportafoli);
-$stmt->fetch();
-$stmt->close();
-
-// Obtener cantidades de activos bitcoin, euro y oro para ese portafolio
-// Nota: en la base de datos los activos pueden tener nombres 'bitcoin', 'euro', 'or' (oro)
-$sql = "SELECT a.nom, pa.quantitat FROM portafolis_actius pa 
-        JOIN actius a ON pa.idactiu = a.idactiu 
-        WHERE pa.idportafoli = ? AND a.nom IN ('bitcoin', 'euro', 'or')";
-$stmt = $conn->prepare($sql);
+// Sumar el valor de todos los activos del usuario en dólares
+$totalActivos = 0;
+$stmt = $conn->prepare("SELECT pa.quantitat, a.valor 
+                        FROM portafolis_actius pa 
+                        JOIN actius a ON pa.idactiu = a.idactiu 
+                        WHERE pa.idportafoli = ?");
 $stmt->bind_param("i", $idportafoli);
 $stmt->execute();
-$result = $stmt->get_result();
+$stmt->bind_result($cantidad, $valor);
 
-$activosHeader = [
-    "bitcoin" => 0,
-    "euro" => 0,
-    "oro" => 0
-];
-
-while ($row = $result->fetch_assoc()) {
-    // Ajustar 'or' a 'oro' para el array
-    $nombre = $row['nom'] === 'or' ? 'oro' : $row['nom'];
-    $activosHeader[$nombre] = $row['quantitat'];
+while ($stmt->fetch()) {
+    $totalActivos += $cantidad * $valor;
 }
-
 $stmt->close();
+
 $conn->close();
+
+// Valor total de la cartera (dólares + activos)
+$valorCartera = $dollars + $totalActivos;
 
 // --- PROCESAR COMPRA ---
 
@@ -246,6 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
 
     echo json_encode(["success" => true, "message" => "✅ Compra realizada correctamente."]);
     exit;
+    
 }
 
 // --- PROCESAR VENTA ---
@@ -469,12 +507,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
           USD
         </p>
       </div>
+
       <div class="LoginCartera">
         <div class="valorCartera">
           <a href="../index.php">
             <img src="../Images/salida.png" alt="VALOR CARTERA" />
           </a>
         </div>
+
         <div class="cuenta">
           <a href="./configuracion.php">
             <img src="../Images/configuraciones.png" alt="CUENTA" />
@@ -482,11 +522,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         </div>
       </div>
     </header>
-    <div class="activosHeader">
-      <p>Bitcoin: <?php echo number_format($activosHeader['bitcoin'], 4); ?> BTC</p>
-      <p>Euro: <?php echo number_format($activosHeader['euro'], 2); ?> EUR</p>
-      <p>Oro: <?php echo number_format($activosHeader['oro'], 4); ?> oz</p>
-  </div>
+    <div class="activos-usuario">
+      <div id="box-bitcoin" class="activo-box">Cargando...</div>
+      <div id="box-or" class="activo-box">Cargando...</div>
+      <div id="box-euro" class="activo-box">Cargando...</div>
+      <div id="cartera-total" class="cartera-total"> 
+          $<?php echo number_format($valorCartera, 2); ?>
+      </div>
+    </div>
     <div class="grafico">
       <canvas id="performanceChart" width="400" height="200"></canvas>
     </div>
@@ -802,7 +845,9 @@ window.onload = function () {
       const data = JSON.parse(text);
       if (data.success) {
         alert("✅ Compra realizada correctamente.");
-        location.reload();
+        cargarActivosUsuario(); // <-- añade esto
+        cargarValores(); // <-- añade esto para actualizar el saldo
+        // location.reload(); // quita o comenta esta línea
       } else {
         alert("⛔ " + data.message);
       }
@@ -850,7 +895,9 @@ document.getElementById("btnVender").addEventListener("click", async () => {
     const data = JSON.parse(text);
     if (data.success) {
       alert("✅ Venta realizada correctamente.");
-      location.reload();
+      cargarActivosUsuario(); // <-- añade esto
+      cargarValores(); // <-- añade esto para actualizar el saldo
+      // location.reload(); // quita o comenta esta línea
     } else {
       alert("⛔ " + data.message);
     }
@@ -863,24 +910,41 @@ document.getElementById("btnVender").addEventListener("click", async () => {
 <script>
 async function cargarActivosUsuario() {
   try {
-    const res = await fetch("home.php?portafolio_activos=1");
+    const res = await fetch("home.php?portafolis_actius=1");
     const data = await res.json();
 
-    const boxes = {
-      bitcoin: document.getElementById("box-bitcoin"),
-      or: document.getElementById("box-or"),
-      euro: document.getElementById("box-euro")
+    const iconos = {
+      bitcoin: { 
+        src: "../Images/bitcoin.png", 
+        sombra: "0 0 10px 2px orange", 
+        alt: "Bitcoin",
+        decimales: 9
+      },
+      or: { 
+        src: "../Images/oro.png", 
+        sombra: "0 0 10px 2px gold", 
+        alt: "Oro",
+        decimales: 4
+      },
+      euro: { 
+        src: "../Images/euro.png", 
+        sombra: "0 0 10px 2px #7d3cff", 
+        alt: "Euro",
+        decimales: 2
+      }
     };
-
-    for (const box of Object.values(boxes)) {
-      if (box) box.textContent = "No disponible";
-    }
 
     data.forEach(activo => {
       const id = `box-${activo.activo}`;
       const el = document.getElementById(id);
       if (el) {
-        el.textContent = `${activo.activo.toUpperCase()}: ${activo.cantidad} ≈ $${activo.valor_usd}`;
+        const icono = iconos[activo.activo];
+        const cantidadFormateada = Number(activo.cantidad).toFixed(icono.decimales);
+        el.innerHTML = `
+          <img class="icono-usuario" src="${icono.src}" alt="${icono.alt}" style="box-shadow:${icono.sombra};" />
+          <span class="cantidad-usuario">${cantidadFormateada}</span>
+          <span class="usd-usuario">≈ $${Number(activo.valor_usd).toFixed(2)}</span>
+        `;
       }
     });
   } catch (err) {
@@ -892,6 +956,9 @@ cargarActivosUsuario();
 setInterval(cargarActivosUsuario, 5000); // actualiza cada 5s
 </script>
 
+<?php
+error_log("ID USUARIO: $usuario | ID PORTAFOLI: $idportafoli");
+?>
 
   </body>
 </html>

@@ -62,15 +62,13 @@ header div div h1{
 }
 
 /*CUENTA*/
-.LoginCartera{
-    width: 120px; 
-    height: 80px;
-    color: white; 
-    display: flex;
-    align-items: center;
-    padding: 0 20px; 
-    margin-left: auto;
-    gap: 20px;
+.LoginCartera {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 80px;
+  padding: 0 20px;
 }
 .cuenta, .valorCartera{
     margin-top: 1px;
@@ -84,6 +82,12 @@ header div div h1{
 .cuenta img, .valorCartera img{
     width: 50px;
     height: 50px;
+}
+
+.valorCartera {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /*.valorCartera{
@@ -102,16 +106,34 @@ header div div h1{
     height: 50px;
 }*/
 /* GRAFICO*/
+.cartera-total {
+  display: flex;
+  margin-left: auto;
+  font-weight: bold;
+  color: rgb(42, 213, 42);
+  background: #2e2e2e;
+  border-radius: 8px;
+  padding: 4px 14px;
+  font-size: 1.1em;
+  vertical-align: middle;
+  letter-spacing: 1px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+  margin: 1rem 0 1rem 20px;
+}
 .activo-box {
   background: #222;
   color: #fff;
   padding: 1rem;
   border-radius: 1rem;
-  font-family: monospace;
   min-width: 150px;
-  text-align: center;
+  float: left;
+  text-align: left;
   box-shadow: 0 0 5px #000;
-  margin-bottom: 0px;
+  margin-left: 0px;
+  
 }
 
 .grafico{
@@ -119,7 +141,7 @@ header div div h1{
     height: 650px;
     background-color: #333;
     border-radius: 20px;
-    margin: 8px 0px 0px 20px; /* Solo 8px arriba, menos separación */
+    margin: 0px 0px 0px 20px;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra debajo */
     outline: none; /* Elimina el contorno azul predeterminado */    
     float: left;
@@ -374,50 +396,6 @@ header div div h1{
     background-color: #3e8e41;
 }
 
-/* Reduce el tamaño de los box de activos y los pone en línea */
-.activos-usuario {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 18px;
-    margin: 18px 0 0 0; /* Solo margen arriba, nada abajo */
-}
-
-#box-bitcoin,
-#box-or,
-#box-euro {
-    min-width: 180px;
-    max-width: 220px;
-    height: 44px;
-    padding: 0.3rem 1.2rem;
-    font-size: 1em;
-    border-radius: 0.7rem;
-    margin-bottom: 0;
-    box-shadow: 0 0 4px #000;
-    background: #222;
-    text-align: center;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-#box-bitcoin img,
-#box-or img,
-#box-euro img {
-    width: 28px;
-    height: 28px;
-    margin-bottom: 0;
-    margin-right: 8px;
-}
-
-.cartera-total {
-    margin-left: 24px;
-    font-size: 1.1em;
-    align-self: center;
-}
-
 /* Ajustes para dispositivos pequeños */
 @media (max-width: 768px) {
     .cambio {
@@ -432,4 +410,31 @@ header div div h1{
     #swapForm .boton {
         font-size: 14px; /* Reducir tamaño del texto */
     }
+}
+
+.activos-usuario {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+  margin: 1rem 0 1rem 20px;
+}
+
+.icono-usuario {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: #222;
+  padding: 2px;
+  display: inline-block;
+}
+.cantidad-usuario {
+  font-size: 1em;
+  color: #fff;
+  margin-right: 6px;
+}
+.usd-usuario {
+  font-size: 0.95em;
+  color: #aaa;
 }

@@ -585,7 +585,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
             </select>
 
             <label for="cantidadSwap">Cantidad:</label>
-            <input type="number" id="cantidadSwap" name="cantidadSwap"  required />
+            <input type="number" id="cantidadSwap" name="cantidadSwap" step="any" min="0.00000001" required />
 
             <button type="submit" class="boton">Realizar Swap</button>
           </form>
@@ -723,7 +723,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
             return;
           }
 
-          if (!cantidadOrigen || cantidadOrigen <= 0) {
+          if (isNaN(cantidadOrigen) || cantidadOrigen <= 0) {
             alert("⚠️ Ingresa una cantidad válida para intercambiar.");
             return;
           }

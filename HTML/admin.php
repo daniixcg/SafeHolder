@@ -67,14 +67,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
 if (isset($_POST['eliminar'])) {
     $idusuari = $_POST['idusuari'];
 
-    // Eliminar usuario por id
-    $sql = "DELETE FROM usuaris WHERE idusuari = '$idusuari'";
+    // Obtener el idportafoli del usuario
+    $sqlPortafoli = "SELECT idportafoli FROM portafolis WHERE idusuari = '$idusuari'";
+    $resultPortafoli = $conn->query($sqlPortafoli);
 
-    if ($conn->query($sql) === TRUE) {
+    if ($resultPortafoli && $resultPortafoli->num_rows > 0) {
+        $row = $resultPortafoli->fetch_assoc();
+        $idportafoli = $row['idportafoli'];
 
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        // 1. Eliminar transacciones asociadas a ese portafolio
+        $sqlDeleteTrans = "DELETE FROM transaccions WHERE idportafoli = '$idportafoli'";
+        $conn->query($sqlDeleteTrans);
+
+        // 2. Eliminar portafolis_actius
+        $sqlDeleteActius = "DELETE FROM portafolis_actius WHERE idportafoli = '$idportafoli'";
+        $conn->query($sqlDeleteActius);
+
+        // 3. Eliminar el portafoli
+        $sqlDeletePortafoli = "DELETE FROM portafolis WHERE idportafoli = '$idportafoli'";
+        $conn->query($sqlDeletePortafoli);
     }
+
+    // 4. Finalmente eliminar el usuario
+    $sqlDeleteUsuari = "DELETE FROM usuaris WHERE idusuari = '$idusuari'";
+    $conn->query($sqlDeleteUsuari);
 }
 
 // Verificar si se ha enviado el formulario de editar usuario

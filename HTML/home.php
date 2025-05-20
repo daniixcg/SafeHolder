@@ -510,7 +510,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
 
       <div class="LoginCartera">
         <div class="valorCartera">
-          <a href="../index.php">
+          <a href="./logout.php">
             <img src="../Images/salida.png" alt="VALOR CARTERA" />
           </a>
         </div>
@@ -602,9 +602,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
           const datos = await res.json();
 
           if (datos[1] !== undefined && datos[1] !== anterior[1]) {
-            document.getElementById(
-              "valor-bitcoin"
-            ).textContent = `$ ${datos[1]}`;
+            document.getElementById("valor-bitcoin").textContent = `$ ${datos[1]}`;
             anterior[1] = datos[1];
           }
           if (datos[2] !== undefined && datos[2] !== anterior[2]) {
@@ -616,11 +614,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
             anterior[3] = datos[3];
           }
 
-          if (
-            datos.dollars !== undefined &&
-            datos.dollars !== anterior.dollars
-          ) {
+          if (datos.dollars !== undefined) {
             anterior.dollars = datos.dollars;
+            // Actualiza el saldo en el header
+            const saldoHeader = document.querySelector(".bienvenida p");
+            if (saldoHeader) {
+              saldoHeader.innerHTML = `Saldo en dólares: ${Number(datos.dollars).toFixed(2)} USD`;
+            }
           }
         } catch (err) {
           console.error("Error al cargar valores:", err);
@@ -845,8 +845,8 @@ window.onload = function () {
       const data = JSON.parse(text);
       if (data.success) {
         alert("✅ Compra realizada correctamente.");
-        cargarActivosUsuario(); // <-- añade esto
-        cargarValores(); // <-- añade esto para actualizar el saldo
+        cargarActivosUsuario();
+        cargarValores(); // Esto refresca el saldo automáticamente
         // location.reload(); // quita o comenta esta línea
       } else {
         alert("⛔ " + data.message);
@@ -895,8 +895,8 @@ document.getElementById("btnVender").addEventListener("click", async () => {
     const data = JSON.parse(text);
     if (data.success) {
       alert("✅ Venta realizada correctamente.");
-      cargarActivosUsuario(); // <-- añade esto
-      cargarValores(); // <-- añade esto para actualizar el saldo
+      cargarActivosUsuario();
+      cargarValores(); // Esto refresca el saldo automáticamente
       // location.reload(); // quita o comenta esta línea
     } else {
       alert("⛔ " + data.message);
